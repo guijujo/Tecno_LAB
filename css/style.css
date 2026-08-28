@@ -1,0 +1,8 @@
+*{
+    background: #e8f0be;
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+}
