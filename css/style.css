@@ -32,6 +32,12 @@ section[id] {
   margin-right: 10px;
 }
 
+.logo-icon-footer {
+  width: 80px;
+  height: 80px;
+  margin-right: 10px;
+}
+
 .navbar .logo {
   font-size: 1.5rem;
   font-weight: bold;
