@@ -14,7 +14,7 @@ Barra superior
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 section[id] {
@@ -55,20 +55,52 @@ section[id] {
   color: #007bff;
 }
 
-.navbar .descargar {
-  padding: 9px 14px;
-  background-color: #007bff;
-  border: 1px solid #007bff;
-  border-radius: 5px;
-  color: #ffffff;
-  font-size: 0.95rem;
-  white-space: nowrap;
+.descargas {
+    position: relative;
+    display: inline-block;
 }
 
-.navbar .descargar:hover {
-  background-color: #ffffff;
-  border-color: #ffffff;
-  color: #007bff;
+#btn-descargas {
+    cursor: pointer;
+}
+
+#registrar {
+  position: relative;
+  margin-top: 32px;
+}
+
+.submenu-contenido {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #f9f9f9;
+    min-width: 180px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 1;
+    margin-top: 5px;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.submenu-contenido a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.submenu-contenido a:hover {
+    background-color: #f1f1f1;
+}
+
+.mostrar-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 /*
@@ -80,6 +112,52 @@ porcentaje de intensidad
   width: 94%;
   margin-top: 10px;
   margin-bottom: 10px;
+  cursor: pointer;
+  accent-color: #007bff;
+  touch-action: none;
+}
+
+.escala-intensidad {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  width: 94%;
+  margin-top: -8px;
+  color: #64748b;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.escala-intensidad span {
+  position: relative;
+  padding-top: 8px;
+}
+
+.escala-intensidad span::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 5px;
+  background-color: #94a3b8;
+}
+
+.resultado-intensidad {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.resultado-intensidad strong {
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.resultado-intensidad span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-style: italic;
 }
 
 /*
@@ -89,28 +167,53 @@ Botón desplegable de resumen
 */
 .iniciocontenedor {
   display: inline-block;
+  position: sticky;
+  top: 74px;
+  z-index: 900;
+}
+
+.iniciocontenedor.resumen-oculto-actualizar {
+  position: fixed;
+  top: 74px;
+  left: 0;
+  z-index: 900;
 }
 
 .contenido-inicio {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
   position: absolute;
-  background-color: #f9f9f9;
-  min-width: 150px;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  min-width: 230px;
   box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 1;
-  padding: 20px;
+  z-index: 901;
+  padding: 22px 24px;
   border-radius: 15px;
   border: 1px solid #ccc;
   line-height: 1.5;
   border-top-left-radius: 0px;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
 }
 
-.contenido a:hover {
-  background-color: #f1f1f1;
+.contenido-inicio h3 {
+  margin: 0 0 4px;
 }
 
-.iniciocontenedor:hover .contenido-inicio {
-  display: block;
+.contenido-inicio p {
+  margin: 0 0 14px;
+}
+
+.contenido-inicio p:last-child {
+  margin-bottom: 0;
+}
+
+.contenido-inicio.mostrar-resumen {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 /*
@@ -126,6 +229,139 @@ div de el registo emocional
   padding: 20px;
   width: 50%;
   margin: 0 auto;
+  transform: translateX(0);
+  transition: transform 0.45s ease, width 0.45s ease;
+}
+
+.panel-actualizar-registros {
+  position: absolute;
+  top: 0;
+  left: calc(50% + 6vw);
+  scroll-margin-top: 100px;
+  z-index: 1001;
+  display: block;
+  width: 0;
+  padding: 0;
+  border: 0 solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  text-align: left;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(36px);
+  transition: opacity 0.35s ease, transform 0.45s ease, visibility 0.45s ease;
+}
+
+.btn-cerrar-actualizar {
+  position: absolute;
+  top: 10px;
+  right: 22px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  color: #334155;
+  z-index: 1;
+}
+
+.btn-cerrar-actualizar:hover {
+  border-color: #64748b;
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+#registrar.panel-actualizar-abierto .cajaregistrar {
+  width: auto;
+  margin: 0;
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#registrar.panel-actualizar-abierto {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 24px;
+  padding: 20px 5%;
+  z-index: 1;
+}
+
+#registrar.panel-actualizar-abierto .panel-actualizar-registros {
+  position: relative;
+  top: auto;
+  left: auto;
+  width: auto;
+  min-width: 0;
+  min-height: 100%;
+  padding: 20px;
+  border-width: 2px;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#registrar.panel-actualizar-abierto .cajaregistrar form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+#registrar.panel-actualizar-abierto .cajaregistrar form > button,
+#registrar.panel-actualizar-abierto #btn-importar-registro {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+#registrar.panel-actualizar-abierto #aviso-pagina,
+#registrar.panel-actualizar-abierto #contenedorBloqueo {
+  grid-column: 1 / -1;
+}
+
+.panel-actualizar-registros h2 {
+  margin-bottom: 8px;
+}
+
+.panel-actualizar-registros p {
+  margin-bottom: 16px;
+}
+
+#registro-para-pegar {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  margin-bottom: 16px;
+  padding: 10px;
+  resize: vertical;
+  font-family: arial, sans-serif;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#registro-para-pegar::placeholder {
+  color: #777;
+}
+
+#registro-para-pegar:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.12);
 }
 
 /*
@@ -136,6 +372,7 @@ area de observación (textarea)
 .areadeobservacion {
   width: 95%;
   height: 100px;
+  min-height: 100px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -301,8 +538,63 @@ historial
 .registros-subtitulo {
     color: #2d3748;
     font-size: 1.15rem;
-    margin-bottom: 15px;
+  margin: 0;
     font-weight: 600;
+}
+
+.encabezado-registros {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.btn-buscar-historial {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  background-color: #f8fafc;
+  color: #334155;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn-buscar-historial:hover,
+.btn-buscar-historial:focus-visible {
+  background-color: #e2e8f0;
+  border-color: #64748b;
+  outline: none;
+}
+
+.busqueda-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: -2px 0 15px;
+}
+
+.busqueda-historial label {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.busqueda-historial input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  color: #1e293b;
+  background-color: #ffffff;
+}
+
+.busqueda-historial input:focus {
+  border-color: #007bff;
+  outline: 3px solid rgba(0, 123, 255, 0.12);
 }
 
 .lista-registros {
@@ -507,6 +799,29 @@ Estadísticas
 
   .cajaregistrar {
     width: 92%;
+  }
+
+  .panel-actualizar-registros {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 0;
+    z-index: 1001;
+  }
+
+  #registrar.panel-actualizar-abierto {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px 4%;
+  }
+
+  #registrar.panel-actualizar-abierto .panel-actualizar-registros {
+    width: auto;
+    margin: 0;
+  }
+
+  #registrar.panel-actualizar-abierto .cajaregistrar {
+    transform: none;
   }
 
   .tarjeta-cabecera {
