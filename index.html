@@ -1,178 +1,285 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" type="image/jpeg" href="img/favicon.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="icon" type="image/jpeg" href="img/favicon.png" />
     <title>Registro Emocional - TECNO-LAB</title>
-</head>
-<body>
+  </head>
+  <body>
     <nav class="navbar">
-            <div class="logo"><img src="img/favicon.png" alt="Proyecto Nosotros" class="logo-icon">Registro Emocional</div>
-            <ul class="nav-links">
-                <li><a id="btn-actualizar-registros" href="#actualizar-registros">Actualizar Registros</a></li>
-                <li><a href="#historial">Historial</a></li>
-                <li><a href="#estadisticas">Estadísticas</a></li>
-                <div id="menu-descargas" class="descargas">
-                <a id="btn-descargas" class="nav-link" href="#" onclick="toggleMenu(event)">Descargar Historial ▾</a>
-                
-                <div id="dropdown-descargas" class="submenu-contenido">
-                    <a href="#" class="descargar">Descargar y Pegar</a>
-                    <a href="#" class="descragadocumento">Descargar Documento PDF</a>
-                </div>
-            </div>
-            </ul>
+      <div class="logo">
+        <img
+          src="img/favicon.png"
+          alt="Proyecto Nosotros"
+          class="logo-icon"
+        />Registro Emocional
+      </div>
+      <button
+        id="btn-menu"
+        class="btn-menu"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="menu-navegacion"
+      >
+        ☰
+      </button>
+      <ul id="menu-navegacion" class="nav-links">
+        <li>
+          <a id="btn-actualizar-registros" href="#actualizar-registros"
+            >Actualizar Registros</a
+          >
+        </li>
+        <li><a href="#historial">Historial</a></li>
+        <li><a href="#estadisticas">Estadísticas</a></li>
+        <div id="menu-descargas" class="descargas">
+          <a
+            id="btn-descargas"
+            class="nav-link"
+            href="#"
+            onclick="toggleMenu(event)"
+            >Descargar Historial ▾</a
+          >
+
+          <div id="dropdown-descargas" class="submenu-contenido">
+            <a href="#" class="descargar">Descargar y Pegar</a>
+            <a href="#" class="descragadocumento">Descargar Documento PDF</a>
+          </div>
+        </div>
+      </ul>
     </nav>
 
     <main>
-        <section id="inicio" class="iniciocontenedor">
-            <button id="btn-resumen" type="button" aria-expanded="false" aria-controls="contenido-resumen">Resumen ▾</button>
-            <div id="contenido-resumen" class="contenido-inicio">
-                <h3>Último registro</h3>
-                <p id="resumen-fecha">Sin registros</p>
-                <h3>Intensidad</h3>
-                <p id="resumen-intensidad"><i>Sin registros</i></p>
-                <h3>Emoción más reciente</h3>
-                <p id="resumen-emocion"><i>Sin registros</i></p>
+      <section id="inicio" class="iniciocontenedor">
+        <button
+          id="btn-resumen"
+          type="button"
+          aria-expanded="false"
+          aria-controls="contenido-resumen"
+        >
+          Resumen ▾
+        </button>
+        <div id="contenido-resumen" class="contenido-inicio">
+          <h3>Último registro</h3>
+          <p id="resumen-fecha">Sin registros</p>
+          <h3>Intensidad</h3>
+          <p id="resumen-intensidad"><i>Sin registros</i></p>
+          <h3>Emoción más reciente</h3>
+          <p id="resumen-emocion"><i>Sin registros</i></p>
+        </div>
+      </section>
+
+      <section id="registrar">
+        <div class="cajaregistrar">
+          <h2>Registrar emoción</h2>
+          <p>
+            <i
+              >Elegí una emoción, indicá su intensidad y agregá una observación
+              breve.</i
+            >
+          </p>
+
+          <form id="form-emocion">
+            <br />
+            <div>
+              <label for="fecha">Fecha</label>
+              <input class="casilladefecha" type="date" id="fecha" readonly />
             </div>
-        </section>
-
-        <section id="registrar">
-            <div class="cajaregistrar">
-                <h2>Registrar emoción</h2>
-                <p><i>Elegí una emoción, indicá su intensidad y agregá una observación breve.</i></p>
-
-                <form id="form-emocion">
-                    <br>
-                    <div>
-                        <label  for="fecha">Fecha</label>
-                        <input class="casilladefecha" type="date" id="fecha" readonly>
-                    </div>
-                    <br>
-                    <div>
-                        <label>Emoción</label>
-                            <select id="emocion-select" class="selectemocion">
-                                <option disabled selected style="display:none;">Seleccioná una emoción</option>
-                                <option value="😀 Felicidad">😀 Felicidad</option>
-                                <option value="😌 Calma">😌 Calma</option>
-                                <option value="😟 Ansiedad">😟 Ansiedad</option>
-                                <option value="😢 Tristeza">😢 Tristeza</option>
-                                <option value="😠 Enojo">😠 Enojo</option>
-                                <option value="💪 Motivación">💪 Motivación</option>
-                                <option value="😰 Ansiedad">😰 Ansiedad</option>
-                                <option value="😤 Frustración">😤 Frustración</option>
-                                <option value="😳 Vergüenza">😳 Vergüenza</option>
-                                <option value="😥 Culpa">😥 Culpa</option>
-                                <option value="😡 Orgullo">😡 Orgullo</option>
-                                <option value="🥰 Gratitud">🥰 Gratitud</option>
-                                <option value="😍 Amor">😍 Amor</option>
-                                <option value="😒 Celos">😒 Celos</option>
-                                <option value="🤬 Envidia">🤬 Envidia</option>
-                                <option value="😞 Decepción">😞 Decepción</option>
-                                <option value="😇 Esperanza">😇 Esperanza</option>
-                            </select>
-                    </div>
-                    <br>
-                    <div>
-                        <label for="intensidad">Intensidad (0 a 10)</label><br>
-                        <input type="range" class="intensidadmedidor" id="intensidad" min="0" max="10" step="0.1" value="5">
-                        <div class="escala-intensidad" aria-hidden="true">
-                            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                            <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
-                        </div>
-                        <div class="resultado-intensidad">
-                            <strong id="valor-intensidad">5</strong>
-                            <span id="descripcion-intensidad">Se siente moderada</span>
-                        </div>
-                    </div><br>
-
-                    <div>
-                        <label for="observacion">Observación</label><br>
-                        <textarea id="observacion" placeholder="Escribí una observación breve" class="areadeobservacion"></textarea>
-                    </div><br>
-                    <button type="submit">Registrar emoción</button>
-                </form>
+            <br />
+            <div>
+              <label>Emoción</label>
+              <select id="emocion-select" class="selectemocion">
+                <option disabled selected style="display: none">
+                  Seleccioná una emoción
+                </option>
+                <option value="😀 Felicidad">😀 Felicidad</option>
+                <option value="😌 Calma">😌 Calma</option>
+                <option value="😟 Ansiedad">😟 Ansiedad</option>
+                <option value="😢 Tristeza">😢 Tristeza</option>
+                <option value="😠 Enojo">😠 Enojo</option>
+                <option value="💪 Motivación">💪 Motivación</option>
+                <option value="😰 Ansiedad">😰 Ansiedad</option>
+                <option value="😤 Frustración">😤 Frustración</option>
+                <option value="😳 Vergüenza">😳 Vergüenza</option>
+                <option value="😥 Culpa">😥 Culpa</option>
+                <option value="😡 Orgullo">😡 Orgullo</option>
+                <option value="🥰 Gratitud">🥰 Gratitud</option>
+                <option value="😍 Amor">😍 Amor</option>
+                <option value="😒 Celos">😒 Celos</option>
+                <option value="🤬 Envidia">🤬 Envidia</option>
+                <option value="😞 Decepción">😞 Decepción</option>
+                <option value="😇 Esperanza">😇 Esperanza</option>
+              </select>
             </div>
-
-            <aside id="actualizar-registros" class="panel-actualizar-registros" aria-hidden="true">
-                <button id="btn-cerrar-actualizar" class="btn-cerrar-actualizar" type="button" aria-label="Cerrar pegar registro">X</button>
-                <h2>Pegar registro</h2>
-                <p>Pegá aquí el contenido descargado para recuperar tus registros.</p>
-                <textarea id="registro-para-pegar" placeholder="Pegá aquí el registro descargado"></textarea>
-                <button id="btn-importar-registro" type="button">Actualizar registros</button>
-            </aside>
-
-            <div id="aviso-pagina" class="aviso-pagina" role="status" aria-live="polite" aria-atomic="true"></div>
-            
-            <div id="contenedorBloqueo" class="pantalla-bloqueo-privacidad oculto">
-
-                <div class="importante-privacidad" id="aviso-privacidad">
-                    <h3>Nota de privacidad</h3>
-                    <p>Este proyecto guarda los registros <strong>de forma local</strong> en el caso de ser descargados como práctica educativa en el botón de "<i>Descargar Historial</i>", para poder ofrecerlos como muestra a un profesional y/o pegarlo en "<i>Actualizar Registros</i>" para guardarlos en el historial.</p>
-                    <p><strong>IMPORTANTE:</strong> No reemplaza el acompañamiento de una persona adulta o profesional.</p>
-                    <button id="btnEntendido">Aceptar y continuar</button>
-                </div>
-
+            <br />
+            <div>
+              <label for="intensidad">Intensidad (0 a 10)</label><br />
+              <input
+                type="range"
+                class="intensidadmedidor"
+                id="intensidad"
+                min="0"
+                max="10"
+                step="0.1"
+                value="5"
+              />
+              <div class="escala-intensidad" aria-hidden="true">
+                <span>0</span><span>1</span><span>2</span><span>3</span
+                ><span>4</span><span>5</span> <span>6</span><span>7</span
+                ><span>8</span><span>9</span><span>10</span>
+              </div>
+              <div class="resultado-intensidad">
+                <strong id="valor-intensidad">5</strong>
+                <span id="descripcion-intensidad">Se siente moderada</span>
+              </div>
             </div>
-        </section>
+            <br />
 
-        <section id="historial" class="historial-contenedor">
-            <h2 class="historial-titulo">Historial</h2>
-            <p class="historial-descripcion">Estos son los registros emocionales guardados en este navegador.</p>
-
-            <div class="registros-bloque">
-                <div class="encabezado-registros">
-                    <h3 class="registros-subtitulo">Registros</h3>
-                    <button id="btn-buscar-historial" class="btn-buscar-historial" type="button" aria-label="Buscar en el historial" aria-expanded="false">⌕</button>
-                </div>
-                <div id="busqueda-historial" class="busqueda-historial" hidden>
-                    <label for="campo-busqueda-historial">Buscar por fecha, emoción, intensidad u observación</label>
-                    <input type="search" id="campo-busqueda-historial" placeholder="Escribí para buscar..." autocomplete="off">
-                </div>
-                <div id="lista-historial" class="lista-registros"></div>
+            <div>
+              <label for="observacion">Observación</label><br />
+              <textarea
+                id="observacion"
+                placeholder="Escribí una observación breve"
+                class="areadeobservacion"
+              ></textarea>
             </div>
-        </section>
-        <br>
+            <br />
+            <button type="submit">Registrar emoción</button>
+          </form>
+        </div>
 
-        <section id="estadisticas" class="estadisticas-contenedor">
-    <h2 class="estadisticas-titulo">Estadísticas</h2>
-    <p class="estadisticas-descripcion">Una mirada rápida a los registros guardados.</p>
+        <aside
+          id="actualizar-registros"
+          class="panel-actualizar-registros"
+          aria-hidden="true"
+        >
+          <button
+            id="btn-cerrar-actualizar"
+            class="btn-cerrar-actualizar"
+            type="button"
+            aria-label="Cerrar pegar registro"
+          >
+            X
+          </button>
+          <h2>Pegar registro</h2>
+          <p>Pegá aquí el contenido descargado para recuperar tus registros.</p>
+          <textarea
+            id="registro-para-pegar"
+            placeholder="Pegá aquí el registro descargado"
+          ></textarea>
+          <button id="btn-importar-registro" type="button">
+            Actualizar registros
+          </button>
+        </aside>
+
+        <div
+          id="aviso-pagina"
+          class="aviso-pagina"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
+
+        <div id="contenedorBloqueo" class="pantalla-bloqueo-privacidad oculto">
+          <div class="importante-privacidad" id="aviso-privacidad">
+            <h3>Nota de privacidad</h3>
+            <p>
+              Este proyecto guarda los registros
+              <strong>de forma local</strong> en el caso de ser descargados como
+              práctica educativa en el botón de "<i>Descargar Historial</i>",
+              para poder ofrecerlos como muestra a un profesional y/o pegarlo en
+              "<i>Actualizar Registros</i>" para guardarlos en el historial.
+            </p>
+            <p>
+              <strong>IMPORTANTE:</strong> No reemplaza el acompañamiento de una
+              persona adulta o profesional.
+            </p>
+            <button id="btnEntendido">Aceptar y continuar</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="historial" class="historial-contenedor">
+        <h2 class="historial-titulo">Historial</h2>
+        <p class="historial-descripcion">
+          Estos son los registros emocionales guardados en este navegador.
+        </p>
+
+        <div class="registros-bloque">
+          <div class="encabezado-registros">
+            <h3 class="registros-subtitulo">Registros</h3>
+            <button
+              id="btn-buscar-historial"
+              class="btn-buscar-historial"
+              type="button"
+              aria-label="Buscar en el historial"
+              aria-expanded="false"
+            >
+              ⌕
+            </button>
+          </div>
+          <div id="busqueda-historial" class="busqueda-historial" hidden>
+            <label for="campo-busqueda-historial"
+              >Buscar por fecha, emoción, intensidad u observación</label
+            >
+            <input
+              type="search"
+              id="campo-busqueda-historial"
+              placeholder="Escribí para buscar..."
+              autocomplete="off"
+            />
+          </div>
+          <div id="lista-historial" class="lista-registros"></div>
+        </div>
+      </section>
+      <br />
+
+      <section id="estadisticas" class="estadisticas-contenedor">
+        <h2 class="estadisticas-titulo">Estadísticas</h2>
+        <p class="estadisticas-descripcion">
+          Una mirada rápida a los registros guardados.
+        </p>
 
         <div class="estadisticas-panel">
-            <div class="bloque-datos">
-                <h3 class="bloque-subtitulo">Datos principales</h3>
-                <div class="tarjetas-grid">
-                    <div class="tarjeta-dato">
-                        <span>Cantidad de registros</span>
-                        <strong id="stat-cantidad">0</strong>
-                    </div>
-                    <div class="tarjeta-dato">
-                        <span>Intensidad promedio</span>
-                        <strong id="stat-promedio">0/10</strong>
-                    </div>
-                    <div class="tarjeta-dato">
-                        <span>Emoción más frecuente</span>
-                        <strong id="stat-frecuente">-</strong>
-                    </div>
-                </div>
+          <div class="bloque-datos">
+            <h3 class="bloque-subtitulo">Datos principales</h3>
+            <div class="tarjetas-grid">
+              <div class="tarjeta-dato">
+                <span>Cantidad de registros</span>
+                <strong id="stat-cantidad">0</strong>
+              </div>
+              <div class="tarjeta-dato">
+                <span>Intensidad promedio</span>
+                <strong id="stat-promedio">0/10</strong>
+              </div>
+              <div class="tarjeta-dato">
+                <span>Emoción más frecuente</span>
+                <strong id="stat-frecuente">-</strong>
+              </div>
             </div>
+          </div>
 
-            <div class="bloque-frecuencias">
-                <h3 class="bloque-subtitulo">Frecuencia por emoción</h3>
-                <ul id="stat-frecuencias" class="lista-frecuencias"></ul>
-            </div>
+          <div class="bloque-frecuencias">
+            <h3 class="bloque-subtitulo">Frecuencia por emoción</h3>
+            <ul id="stat-frecuencias" class="lista-frecuencias"></ul>
+          </div>
         </div>
-    </section>
+      </section>
     </main>
 
     <footer id="descargar">
-        <img src="img/icono-circular.png" alt="logo Proyecto Nosotros" class="logo-icon-footer">
-        <p><strong>Registro Emocional Web</strong></p>
-        <p>Tecno-LAB | Proyecto Nosotros</p>
-        <p>Tus registros son privados.</p>
+      <img
+        src="img/icono-circular.png"
+        alt="logo Proyecto Nosotros"
+        class="logo-icon-footer"
+      />
+      <p><strong>Registro Emocional Web</strong></p>
+      <p>Tecno-LAB | Proyecto Nosotros</p>
+      <p>Tus registros son privados.</p>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="js/script.js"></script>
-</body>
+  </body>
 </html>

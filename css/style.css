@@ -61,13 +61,24 @@ section[id] {
   color: #007bff;
 }
 
+.btn-menu {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.7rem;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
 .descargas {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 #btn-descargas {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #registrar {
@@ -79,28 +90,31 @@ section[id] {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px);
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: #f9f9f9;
-    min-width: 180px;
-    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-    border-radius: 4px;
-    overflow: hidden;
-    z-index: 1;
-    margin-top: 5px;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #f9f9f9;
+  min-width: 180px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 1;
+  margin-top: 5px;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .submenu-contenido a {
-    color: #333;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
+  color: #333;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
 }
 
 .submenu-contenido a:hover {
-    background-color: #f1f1f1;
+  background-color: #f1f1f1;
 }
 
 .mostrar-menu {
@@ -139,7 +153,7 @@ porcentaje de intensidad
 }
 
 .escala-intensidad span::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 50%;
@@ -194,14 +208,17 @@ Botón desplegable de resumen
   left: 0;
   background-color: #ffffff;
   min-width: 230px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 901;
   padding: 22px 24px;
   border-radius: 15px;
   border: 1px solid #ccc;
   line-height: 1.5;
   border-top-left-radius: 0px;
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .contenido-inicio h3 {
@@ -236,7 +253,9 @@ div de el registo emocional
   width: 50%;
   margin: 0 auto;
   transform: translateX(0);
-  transition: transform 0.45s ease, width 0.45s ease;
+  transition:
+    transform 0.45s ease,
+    width 0.45s ease;
 }
 
 .panel-actualizar-registros {
@@ -257,7 +276,10 @@ div de el registo emocional
   visibility: hidden;
   pointer-events: none;
   transform: translateX(36px);
-  transition: opacity 0.35s ease, transform 0.45s ease, visibility 0.45s ease;
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s ease,
+    visibility 0.45s ease;
 }
 
 .btn-cerrar-actualizar {
@@ -358,7 +380,9 @@ div de el registo emocional
   border: 1px solid #ccc;
   border-radius: 5px;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 #registro-para-pegar::placeholder {
@@ -399,25 +423,25 @@ Estilos generales
   box-sizing: border-box;
 }
 
-button { 
-  position: relative; 
-  background-color: #007bff; 
-  color: white; 
-  padding: 10px 20px; 
+button {
+  position: relative;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
   border: 1px solid transparent;
-  border-radius: 5px; 
-  cursor: pointer; 
-  font-size: 16px; 
-  transition: 0.5s ease; 
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.5s ease;
 }
 
-button:hover { 
-  color: #007bff; 
-  background-color: white; 
+button:hover {
+  color: #007bff;
+  background-color: white;
   border-color: #007bff;
 }
 
-body{
+body {
   background-color: #fff;
   font-family: arial, sans-serif;
 }
@@ -515,37 +539,42 @@ historial
 ---------
 */
 #historial.historial-contenedor {
-    max-width: 1000px;
-    margin: 30px auto;
-    padding: 24px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    font-family: system-ui, -apple-system, sans-serif;
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 24px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .historial-titulo {
-    color: #1a202c;
-    font-size: 1.5rem;
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-weight: 600;
+  color: #1a202c;
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .historial-descripcion {
-    color: #4a5568;
-    font-size: 0.95rem;
-    font-style: italic;
-    line-height: 1.5;
-    margin-bottom: 25px;
+  color: #4a5568;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 25px;
 }
 
 .registros-subtitulo {
-    color: #2d3748;
-    font-size: 1.15rem;
+  color: #2d3748;
+  font-size: 1.15rem;
   margin: 0;
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .encabezado-registros {
@@ -604,9 +633,9 @@ historial
 }
 
 .lista-registros {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .historial-vacio {
@@ -619,20 +648,22 @@ historial
 }
 
 .tarjeta-emocion {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-left: 4px solid #007bff;
-    padding: 16px;
-    border-radius: 6px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #007bff;
+  padding: 16px;
+  border-radius: 6px;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .tarjeta-emocion:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .tarjeta-cabecera {
@@ -673,7 +704,10 @@ historial
   color: transparent;
   opacity: 0;
   transform: translateY(-8px);
-  transition: opacity 0.2s ease, transform 0.2s ease, padding 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    padding 0.2s ease;
 }
 
 .aviso-pagina:not(:empty) {
@@ -700,107 +734,122 @@ Estadísticas
 ------------
 */
 #estadisticas.estadisticas-contenedor {
-    max-width: 1000px;
-    margin: 30px auto;
-    padding: 24px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    font-family: system-ui, -apple-system, sans-serif;
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 24px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .estadisticas-titulo {
-    color: #1a202c;
-    font-size: 1.5rem;
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-weight: 600;
+  color: #1a202c;
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .estadisticas-descripcion {
-    color: #4a5568;
-    font-size: 0.95rem;
-    font-style: italic;
-    line-height: 1.5;
-    margin-bottom: 25px;
+  color: #4a5568;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 25px;
 }
 
 .estadisticas-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
 }
 
 @media (max-width: 768px) {
-    .estadisticas-panel {
-        grid-template-columns: 1fr;
-    }
+  .estadisticas-panel {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bloque-subtitulo {
-    color: #2d3748;
-    font-size: 1.15rem;
-    margin-bottom: 15px;
-    font-weight: 600;
+  color: #2d3748;
+  font-size: 1.15rem;
+  margin-bottom: 15px;
+  font-weight: 600;
 }
 
 .tarjetas-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .tarjeta-dato {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f8fafc;
-    border: 1px solid #edf2f7;
-    padding: 14px 18px;
-    border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #edf2f7;
+  padding: 14px 18px;
+  border-radius: 6px;
 }
 
 .tarjeta-dato span {
-    color: #4a5568;
-    font-size: 0.95rem;
+  color: #4a5568;
+  font-size: 0.95rem;
 }
 
 .tarjeta-dato strong {
-    color: #007bff;
-    font-size: 1.1rem;
-    font-weight: 600;
+  color: #007bff;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .lista-frecuencias {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .lista-frecuencias li {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #e2e8f0;
-    color: #4a5568;
-    font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #e2e8f0;
+  color: #4a5568;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 768px) {
   .navbar {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 0;
     padding: 12px 16px;
   }
 
+  .btn-menu {
+    display: block;
+  }
+
   .nav-links {
-    flex-wrap: wrap;
-    gap: 10px 16px;
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 16px;
+  }
+
+  .navbar.menu-abierto .nav-links {
+    display: flex;
   }
 
   .cajaregistrar {
