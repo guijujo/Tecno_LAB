@@ -28,7 +28,11 @@
       </button>
       <ul id="menu-navegacion" class="nav-links">
         <li>
-          <a id="btn-actualizar-registros" href="#actualizar-registros"
+          <a
+            id="btn-actualizar-registros"
+            href="#actualizar-registros"
+            aria-expanded="false"
+            aria-controls="actualizar-registros"
             >Actualizar Registros</a
           >
         </li>
@@ -153,6 +157,9 @@
         <aside
           id="actualizar-registros"
           class="panel-actualizar-registros"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-actualizar-registros"
           aria-hidden="true"
         >
           <button
@@ -163,8 +170,16 @@
           >
             X
           </button>
-          <h2>Pegar registro</h2>
+          <h2 id="titulo-actualizar-registros">Actualizar registros</h2>
           <p>Pegá aquí el contenido descargado para recuperar tus registros.</p>
+          <label class="selector-archivo" for="archivo-registros">
+            <span>Importar archivo de respaldo</span>
+            <input
+              id="archivo-registros"
+              type="file"
+              accept=".txt,.json,.csv,text/plain,application/json,text/csv"
+            />
+          </label>
           <textarea
             id="registro-para-pegar"
             placeholder="Pegá aquí el registro descargado"
@@ -173,6 +188,8 @@
             Actualizar registros
           </button>
         </aside>
+
+        <div id="modal-overlay-bg" class="modal-overlay-bg" hidden></div>
 
         <div
           id="aviso-pagina"

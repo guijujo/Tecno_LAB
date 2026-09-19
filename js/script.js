@@ -2,6 +2,11 @@ let emocionSeleccionada = "";
 
 const botonMenu = document.getElementById("btn-menu");
 const barraNavegacion = document.querySelector(".navbar");
+const botonActualizar = document.getElementById("btn-actualizar-registros");
+const panelActualizar = document.getElementById("actualizar-registros");
+const overlayModal = document.getElementById("modal-overlay-bg");
+const botonCerrarActualizar = document.getElementById("btn-cerrar-actualizar");
+const archivoRegistros = document.getElementById("archivo-registros");
 
 botonMenu.addEventListener("click", () => {
   const estaAbierto = barraNavegacion.classList.toggle("menu-abierto");
@@ -270,38 +275,50 @@ function cargarImagenParaPDF(ruta) {
   });
 }
 
-document
-  .getElementById("btn-actualizar-registros")
-  .addEventListener("click", (e) => {
-    e.preventDefault();
-    const registrar = document.getElementById("registrar");
-    const panel = document.getElementById("actualizar-registros");
-    const resumen = document.getElementById("inicio");
-    const estaAbierto = registrar.classList.toggle("panel-actualizar-abierto");
-    panel.setAttribute("aria-hidden", !estaAbierto);
-    resumen.classList.toggle("resumen-oculto-actualizar", estaAbierto);
-    e.currentTarget.setAttribute("aria-expanded", estaAbierto);
+function cerrarModalActualizar() {
+  panelActualizar.classList.remove("modal-visible");
+  panelActualizar.setAttribute("aria-hidden", "true");
+  overlayModal.hidden = true;
+  botonActualizar.setAttribute("aria-expanded", "false");
+  botonActualizar.focus();
+}
 
-    if (estaAbierto) {
-      const alturaNavbar = document.querySelector(".navbar").offsetHeight;
-      const posicion = registrar.offsetTop - alturaNavbar - 80;
-      window.scrollTo({ top: Math.max(0, posicion), behavior: "smooth" });
-    }
-  });
+botonActualizar.addEventListener("click", (e) => {
+  e.preventDefault();
+  panelActualizar.classList.add("modal-visible");
+  panelActualizar.setAttribute("aria-hidden", "false");
+  overlayModal.hidden = false;
+  botonActualizar.setAttribute("aria-expanded", "true");
+  botonCerrarActualizar.focus();
+});
 
-document
-  .getElementById("btn-cerrar-actualizar")
-  .addEventListener("click", () => {
-    const registrar = document.getElementById("registrar");
-    const panel = document.getElementById("actualizar-registros");
-    const resumen = document.getElementById("inicio");
-    registrar.classList.remove("panel-actualizar-abierto");
-    panel.setAttribute("aria-hidden", "true");
-    resumen.classList.remove("resumen-oculto-actualizar");
-    document
-      .getElementById("btn-actualizar-registros")
-      .setAttribute("aria-expanded", "false");
+botonCerrarActualizar.addEventListener("click", cerrarModalActualizar);
+overlayModal.addEventListener("click", cerrarModalActualizar);
+
+document.addEventListener("keydown", (e) => {
+  if (
+    e.key === "Escape" &&
+    panelActualizar.classList.contains("modal-visible")
+  ) {
+    cerrarModalActualizar();
+  }
+});
+
+archivoRegistros.addEventListener("change", () => {
+  const archivo = archivoRegistros.files[0];
+  if (!archivo) {
+    return;
+  }
+
+  const lector = new FileReader();
+  lector.addEventListener("load", (e) => {
+    document.getElementById("registro-para-pegar").value = e.target.result;
   });
+  lector.addEventListener("error", () => {
+    mostrarAviso("No se pudo leer el archivo seleccionado.", "error");
+  });
+  lector.readAsText(archivo);
+});
 
 document
   .getElementById("btn-importar-registro")

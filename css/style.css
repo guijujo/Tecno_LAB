@@ -287,15 +287,34 @@ div de el registo emocional
   border-radius: 12px;
   background: linear-gradient(180deg, #ffffff, #eef9ff);
   text-align: left;
-  overflow: hidden;
+  overflow-y: auto;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateX(36px);
+  transform: translate(-50%, -46%);
   transition:
     opacity 0.35s ease,
-    transform 0.45s ease,
+    transform 0.35s ease,
     visibility 0.45s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.panel-actualizar-registros.modal-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.modal-overlay-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  background-color: rgba(15, 23, 42, 0.55);
+}
+
+.modal-overlay-bg[hidden] {
+  display: none;
 }
 
 .btn-cerrar-actualizar {
@@ -321,66 +340,30 @@ div de el registo emocional
   color: #0f172a;
 }
 
-#registrar.panel-actualizar-abierto .cajaregistrar {
-  width: auto;
-  margin: 0;
-  transform: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-#registrar.panel-actualizar-abierto {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 24px;
-  padding: 20px 5%;
-  z-index: 1;
-}
-
-#registrar.panel-actualizar-abierto .panel-actualizar-registros {
-  position: relative;
-  top: auto;
-  left: auto;
-  width: auto;
-  min-width: 0;
-  min-height: 100%;
-  padding: 20px;
-  border-width: 2px;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: none;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-#registrar.panel-actualizar-abierto .cajaregistrar form {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-#registrar.panel-actualizar-abierto .cajaregistrar form > button,
-#registrar.panel-actualizar-abierto #btn-importar-registro {
-  margin-top: auto;
-  align-self: flex-start;
-}
-
-#registrar.panel-actualizar-abierto #aviso-pagina,
-#registrar.panel-actualizar-abierto #contenedorBloqueo {
-  grid-column: 1 / -1;
-}
-
 .panel-actualizar-registros h2 {
   margin-bottom: 8px;
 }
 
 .panel-actualizar-registros p {
   margin-bottom: 16px;
+}
+
+.selector-archivo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.selector-archivo input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background-color: #f8fafc;
+  color: #334155;
 }
 
 #registro-para-pegar {
@@ -880,26 +863,7 @@ Estadísticas
   }
 
   .panel-actualizar-registros {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: 0;
-    z-index: 1001;
-  }
-
-  #registrar.panel-actualizar-abierto {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 16px 4%;
-  }
-
-  #registrar.panel-actualizar-abierto .panel-actualizar-registros {
-    width: auto;
-    margin: 0;
-  }
-
-  #registrar.panel-actualizar-abierto .cajaregistrar {
-    transform: none;
+    padding: 24px;
   }
 
   .tarjeta-cabecera {
