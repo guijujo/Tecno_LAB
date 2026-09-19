@@ -12,6 +12,9 @@
   --negro: #02070d;
   --borde: #afdffb;
   --sombra: rgba(14, 27, 38, 0.18);
+  /* Ancho único de las tarjetas: ocupa el 92% en pantallas chicas y
+     deja de crecer a partir de los 900px. */
+  --ancho-caja: min(92%, 900px);
 }
 
 /* Base */
@@ -308,7 +311,7 @@ footer {
 }
 
 .cajaregistrar {
-  width: 80%;
+  width: var(--ancho-caja);
   margin: 0 auto;
   padding: 20px;
   border: 2px solid var(--borde);
@@ -412,7 +415,7 @@ footer {
   left: 50%;
   z-index: 2101;
   display: block;
-  width: min(92%, 620px);
+  width: var(--ancho-caja);
   max-height: 85vh;
   padding: 28px 22px 22px;
   overflow-y: auto;
@@ -560,7 +563,6 @@ footer {
 
 /* Modal de sugerencia */
 .panel-sugerencia {
-  width: min(92%, 540px);
   border-top: 5px solid var(--celeste-fuerte);
 }
 
@@ -698,7 +700,7 @@ footer {
 #historial.historial-contenedor,
 #calendario.calendario-contenedor,
 #estadisticas.estadisticas-contenedor {
-  width: 80%;
+  width: var(--ancho-caja);
   margin: 30px auto;
   padding: 20px;
   border: 1px solid var(--borde);
@@ -1111,14 +1113,9 @@ button.dia-calendario:focus-visible {
   text-align: center;
 }
 
-/* Móvil: la grilla de 7 columnas necesita más ancho que el resto de
-   las tarjetas para que cada día siga siendo tocable. */
-@media (max-width: 768px) {
-  #calendario.calendario-contenedor {
-    width: 92%;
-    padding: 18px 12px;
-  }
-
+/* Móvil: la grilla de 7 columnas se aprieta, así que se recortan las
+   separaciones para que cada día siga siendo tocable. */
+@media (max-width: 899px) {
   .calendario-grilla {
     border-spacing: 3px;
   }
@@ -1133,8 +1130,9 @@ button.dia-calendario:focus-visible {
   }
 }
 
-/* Escritorio */
-@media (min-width: 769px) {
+/* Escritorio. El corte está en 900px y no en 769px porque la barra de
+   navegación completa no entra por debajo de eso. */
+@media (min-width: 900px) {
   .navbar {
     flex-wrap: nowrap;
     gap: 1rem;
@@ -1158,15 +1156,29 @@ button.dia-calendario:focus-visible {
     padding-top: 0;
   }
 
-  .cajaregistrar {
-    width: 50%;
+  /* El submenú cuelga del último ítem de la barra: anclado a la
+     izquierda se sale de la pantalla y agrega scroll horizontal aun
+     estando cerrado, porque sigue ocupando lugar. */
+  .submenu-contenido {
+    right: 0;
+    left: auto;
   }
 
   #historial.historial-contenedor,
   #calendario.calendario-contenedor,
   #estadisticas.estadisticas-contenedor {
     padding: 24px;
-    width: 50%;
+  }
+
+  /* Con la tarjeta a 900px cada columna del calendario es ancha: se
+     sube el alto para que el día no quede achatado. */
+  .dia-calendario {
+    min-height: 58px;
+    font-size: 0.8rem;
+  }
+
+  .dia-cara {
+    font-size: 1.35rem;
   }
 
   .estadisticas-panel {
