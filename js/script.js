@@ -410,12 +410,17 @@ document.addEventListener("click", (evento) => {
 /* ---------------------------------------------------------------
    Formulario de registro
 --------------------------------------------------------------- */
+// AAAA-MM-DD: lo que espera un <input type="date"> y, de paso, lo que
+// hace que los archivos descargados se ordenen solos por fecha.
+function fechaISO(fecha = new Date()) {
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
+
 function refrescarFecha() {
-  const hoy = new Date();
-  const anio = hoy.getFullYear();
-  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
-  const dia = String(hoy.getDate()).padStart(2, "0");
-  campoFecha.value = `${anio}-${mes}-${dia}`;
+  campoFecha.value = fechaISO();
 }
 
 // Si la pestaña queda abierta de un día para el otro, la fecha se
@@ -725,9 +730,9 @@ botonDescargarTexto.addEventListener("click", () => {
   }
 
   descargarArchivo(
-    "registros-emocionales.txt",
+    `registros-emocionales-${fechaISO()}.json`,
     JSON.stringify(registros, null, 2),
-    "text/plain;charset=utf-8",
+    "application/json;charset=utf-8",
   );
   mostrarAviso("Registros descargados correctamente.", "exito");
 });
@@ -872,7 +877,7 @@ botonDescargarPdf.addEventListener("click", async () => {
     tamano: 9,
   });
 
-  documento.save("registro-emocional-completo.pdf");
+  documento.save(`registro-emocional-completo-${fechaISO()}.pdf`);
   mostrarAviso("Documento PDF descargado correctamente.", "exito");
 });
 
