@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Guía del taller TECNO-LAB: cómo armar un proyecto web desde cero, buenas prácticas, UI/UX, Git y GitHub, trabajo en equipo con ramas y cómo apoyarse en una IA."
+    />
+    <meta name="theme-color" content="#0d1b2a" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" type="image/png" href="../img/favicon.png" />
+    <title>Guía del taller · Registro Emocional</title>
+    <style>
+      .guia {
+        width: var(--ancho-caja);
+        margin: 30px auto;
+        padding: 24px;
+        border: 1px solid var(--borde);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ffffff, #eef9ff);
+        box-shadow: 0 14px 30px rgba(10, 25, 38, 0.08);
+        line-height: 1.65;
+      }
+
+      .guia h1 {
+        margin-bottom: 8px;
+        font-size: 1.7rem;
+      }
+
+      .guia h2 {
+        margin: 36px 0 12px;
+        padding-top: 18px;
+        border-top: 2px solid var(--borde);
+        font-size: 1.3rem;
+      }
+
+      .guia h3 {
+        margin: 24px 0 8px;
+        color: var(--celeste-fuerte);
+        font-size: 1.05rem;
+      }
+
+      .guia p,
+      .guia ul,
+      .guia ol {
+        margin-bottom: 14px;
+      }
+
+      .guia ul,
+      .guia ol {
+        padding-left: 22px;
+      }
+
+      .guia li {
+        margin-bottom: 7px;
+      }
+
+      .guia-intro {
+        margin-bottom: 24px;
+        color: var(--texto-suave);
+        font-style: italic;
+      }
+
+      .indice {
+        margin-bottom: 8px;
+        padding: 16px 20px;
+        border: 1px solid var(--borde);
+        border-radius: 8px;
+        background-color: #f4fbff;
+      }
+
+      .indice ol {
+        margin-bottom: 0;
+      }
+
+      .indice a {
+        color: var(--celeste-fuerte);
+      }
+
+      pre {
+        margin-bottom: 14px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        border: 1px solid #d8eefc;
+        border-left: 4px solid var(--celeste-fuerte);
+        border-radius: 6px;
+        background-color: #f7fcff;
+        font-size: 0.86rem;
+        line-height: 1.55;
+      }
+
+      code {
+        padding: 1px 5px;
+        border-radius: 4px;
+        background-color: #e6f4fd;
+        font-size: 0.88em;
+        overflow-wrap: anywhere;
+      }
+
+      pre code {
+        padding: 0;
+        background: none;
+        font-size: 1em;
+      }
+
+      .idea,
+      .ojo {
+        margin: 18px 0;
+        padding: 14px 16px;
+        border-radius: 6px;
+        font-size: 0.95rem;
+      }
+
+      .idea {
+        border: 1px solid #a7f3d0;
+        border-left: 4px solid #10b981;
+        background-color: #f0fdf7;
+      }
+
+      .ojo {
+        border: 1px solid #fcd9a4;
+        border-left: 4px solid #f59e0b;
+        background-color: #fffaf0;
+      }
+
+      .idea strong:first-child,
+      .ojo strong:first-child {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .comparar {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      @media (min-width: 700px) {
+        .comparar {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .mal,
+      .bien {
+        padding: 14px 16px;
+        border-radius: 6px;
+        font-size: 0.92rem;
+      }
+
+      .mal {
+        border: 1px solid #fecaca;
+        background-color: #fef2f2;
+      }
+
+      .bien {
+        border: 1px solid #a7f3d0;
+        background-color: #f0fdf7;
+      }
+
+      .mal p:last-child,
+      .bien p:last-child {
+        margin-bottom: 0;
+      }
+
+      .etiqueta {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .mal .etiqueta {
+        color: #b91c1c;
+      }
+
+      .bien .etiqueta {
+        color: #047857;
+      }
+
+      .volver {
+        display: inline-block;
+        margin-top: 24px;
+        color: var(--celeste-fuerte);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo">
+        <a href="../index.html">
+          <img
+            src="../img/favicon.png"
+            alt="Proyecto Nosotros"
+            class="logo-icon"
+          />
+        </a>
+        <span class="logo-texto">Registro Emocional</span>
+      </div>
+    </nav>
+
+    <main>
+      <article class="guia">
+        <h1>Guía para armar un proyecto web</h1>
+        <p class="guia-intro">
+          Todo lo que aprendimos haciendo el Registro Emocional, ordenado para
+          que puedas construir algo parecido desde cero o aplicarlo a tu propio
+          proyecto. No hace falta leerla de corrido: usá el índice.
+        </p>
+
+        <nav class="indice" aria-label="Contenido de la guía">
+          <ol>
+            <li><a href="#antes">Antes de escribir código</a></li>
+            <li><a href="#archivos">Los tres archivos</a></li>
+            <li><a href="#html">HTML: la estructura</a></li>
+            <li><a href="#css">CSS: la apariencia</a></li>
+            <li><a href="#js">JavaScript: el comportamiento</a></li>
+            <li><a href="#uiux">Decisiones de UI/UX</a></li>
+            <li><a href="#privacidad">Privacidad</a></li>
+            <li><a href="#git">Git y GitHub</a></li>
+            <li><a href="#ramas">Trabajar en equipo con ramas</a></li>
+            <li><a href="#ia">Trabajar con una IA</a></li>
+            <li><a href="#orden">Un orden para arrancar</a></li>
+            <li><a href="#cierre">Para cerrar</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="antes">1. Antes de escribir código</h2>
+
+        <p>
+          La parte más importante no se hace en la computadora. Antes de abrir
+          el editor, respondé tres preguntas.
+        </p>
+
+        <h3>¿Qué hace tu página, en una sola frase?</h3>
+        <p>
+          Si no te sale en una frase, todavía no sabés qué estás haciendo. La
+          nuestra: <em>«anotar cómo te sentís y ver cómo fue cambiando»</em>.
+          Esa frase después sirve para decidir: todo lo que no la ayude,
+          sobra.
+        </p>
+
+        <h3>¿Qué datos necesitás guardar?</h3>
+        <p>
+          Escribí en papel qué información guarda cada cosa. En nuestro caso,
+          cada registro tiene fecha, emoción, intensidad y una observación.
+        </p>
+
+        <div class="idea">
+          <strong>Lo que nos pasó</strong>
+          Guardábamos la intensidad del 0 al 10 y parecía suficiente. Cuando
+          quisimos pintar el calendario nos dimos cuenta de que la intensidad
+          sola no dice si el día estuvo bien o mal: un 9 de felicidad y un 9 de
+          enojo son opuestos y los dos son «9». Faltaba un dato: si la emoción
+          es agradable o difícil. Pensar los datos al principio te ahorra
+          rehacer cosas después.
+        </div>
+
+        <h3>¿Cómo se ve, más o menos?</h3>
+        <p>
+          Dibujalo en papel. No tiene que quedar lindo: alcanza con saber qué
+          secciones hay y en qué orden. Vas a escribir mucho mejor el HTML si
+          ya sabés qué partes existen.
+        </p>
+
+        <h2 id="archivos">2. Los tres archivos</h2>
+
+        <p>Un proyecto web chico necesita tres archivos y nada más:</p>
+
+        <pre><code>mi-proyecto/
+  index.html      qué hay en la página
+  css/style.css   cómo se ve
+  js/script.js    qué hace cuando la usás
+  img/            las imágenes</code></pre>
+
+        <p>
+          Se pueden mezclar los tres en un solo archivo, y al principio parece
+          más cómodo. No lo hagas. Separados, cuando algo se ve mal sabés que
+          está en el CSS, y cuando algo no responde sabés que está en el
+          JavaScript. Con todo junto, cada búsqueda es en un archivo gigante.
+        </p>
+
+        <p>Se enganchan desde el HTML:</p>
+
+        <pre><code>&lt;link rel="stylesheet" href="css/style.css"&gt;   &lt;!-- en el &lt;head&gt; --&gt;
+&lt;script src="js/script.js"&gt;&lt;/script&gt;          &lt;!-- al final del &lt;body&gt; --&gt;</code></pre>
+
+        <p>
+          El <code>&lt;script&gt;</code> va <strong>al final</strong>, justo
+          antes de cerrar <code>&lt;/body&gt;</code>. Si lo ponés arriba, el
+          JavaScript se ejecuta antes de que exista el HTML y no encuentra nada.
+        </p>
+
+        <h2 id="html">3. HTML: la estructura</h2>
+
+        <p>
+          El HTML dice <strong>qué hay</strong>, no cómo se ve. Esa distinción
+          es la que más cuesta al principio y la que más rinde después.
+        </p>
+
+        <h3>Usá la etiqueta que corresponde</h3>
+
+        <p>
+          Casi todo se puede hacer con <code>&lt;div&gt;</code>. Casi nada
+          conviene hacerlo así.
+        </p>
+
+        <div class="comparar">
+          <div class="mal">
+            <span class="etiqueta">Evitá</span>
+            <pre><code>&lt;div onclick="guardar()"&gt;
+  Guardar
+&lt;/div&gt;</code></pre>
+            <p>
+              No se puede usar con el teclado, un lector de pantalla no sabe que
+              es un botón, y no responde a Enter ni a la barra espaciadora.
+            </p>
+          </div>
+          <div class="bien">
+            <span class="etiqueta">Mejor</span>
+            <pre><code>&lt;button type="button"&gt;
+  Guardar
+&lt;/button&gt;</code></pre>
+            <p>
+              Gratis: foco con Tab, se activa con Enter, y quien no ve la
+              pantalla escucha «botón, Guardar».
+            </p>
+          </div>
+        </div>
+
+        <p>Las que vas a usar siempre:</p>
+
+        <ul>
+          <li>
+            <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>,
+            <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code> para las
+            zonas grandes.
+          </li>
+          <li>
+            <code>&lt;section&gt;</code> para cada bloque con su propio título.
+          </li>
+          <li>
+            <code>&lt;button&gt;</code> cuando algo <em>hace</em> una acción;
+            <code>&lt;a&gt;</code> cuando <em>lleva</em> a otro lado. Si te
+            confundís, preguntate: ¿esto cambia de página? Es un enlace. ¿Hace
+            algo acá mismo? Es un botón.
+          </li>
+          <li>
+            <code>&lt;ul&gt;</code> con <code>&lt;li&gt;</code> adentro para
+            listas. Solo <code>&lt;li&gt;</code>: meter un
+            <code>&lt;div&gt;</code> suelto dentro de una lista es HTML
+            inválido.
+          </li>
+        </ul>
+
+        <h3>Los formularios necesitan etiquetas asociadas</h3>
+
+        <pre><code>&lt;label for="emocion"&gt;Emoción&lt;/label&gt;
+&lt;select id="emocion"&gt;...&lt;/select&gt;</code></pre>
+
+        <p>
+          El <code>for</code> tiene que coincidir con el <code>id</code>. Con
+          eso, tocar el texto «Emoción» activa el campo —más fácil en un
+          celular— y un lector de pantalla dice qué es ese campo. Sin eso, dice
+          «combo box» y nada más.
+        </p>
+
+        <div class="idea">
+          <strong>Una prueba rápida</strong>
+          Navegá tu página usando solo la tecla Tab, sin tocar el mouse.
+          ¿Podés llegar a todo? ¿Se ve dónde estás parado? Si la respuesta es
+          no, hay algo para arreglar.
+        </div>
+
+        <h2 id="css">4. CSS: la apariencia</h2>
+
+        <h3>Variables: escribí el color una sola vez</h3>
+
+        <p>
+          Arriba de todo declarás tus colores y medidas, y después los usás por
+          nombre. Cuando quieras cambiar el celeste, lo cambiás en un lugar.
+        </p>
+
+        <pre><code>:root {
+  --celeste: #7ed8ff;
+  --texto: #0c1723;
+  --borde: #afdffb;
+  --ancho-caja: min(92%, 900px);
+}
+
+.tarjeta {
+  border: 1px solid var(--borde);
+  color: var(--texto);
+}</code></pre>
+
+        <h3>Que no crezca sin límite</h3>
+
+        <p>
+          Si a una caja le ponés <code>width: 92%</code>, en un monitor grande
+          se estira hasta ser ilegible: líneas larguísimas que cansan al leer.
+          Si le ponés un ancho fijo en píxeles, en el celular no entra.
+        </p>
+
+        <pre><code>width: min(92%, 900px);</code></pre>
+
+        <p>
+          Se lee: «el 92% del ancho, pero nunca más de 900 píxeles». En pantalla
+          chica manda el porcentaje, en pantalla grande manda el tope.
+        </p>
+
+        <div class="ojo">
+          <strong>Cuidado con las reglas que no hacen nada</strong>
+          Poner <code>width: 50%</code> y <code>max-width: 97%</code> juntos no
+          sirve de nada: el 50% nunca va a superar el 97%, así que el máximo
+          nunca se aplica. Es fácil escribir CSS que parece hacer algo y no hace
+          nada. Si dudás, cambiá el valor a algo exagerado y mirá si cambia
+          algo en pantalla.
+        </div>
+
+        <h3>El celular primero</h3>
+
+        <p>
+          Escribí los estilos pensando en pantalla chica, y después agregá lo
+          que cambia en pantalla grande:
+        </p>
+
+        <pre><code>.tarjeta { width: var(--ancho-caja); }   /* vale para todos */
+
+@media (min-width: 900px) {             /* solo en pantalla grande */
+  .tarjeta { padding: 24px; }
+}</code></pre>
+
+        <p>
+          El número donde cortás no es mágico: elegilo mirando dónde tu diseño
+          empieza a verse apretado. En nuestro proyecto tuvimos que subirlo
+          cuando agregamos un ítem al menú y dejó de entrar.
+        </p>
+
+        <h3>Que se vea dónde está el foco</h3>
+
+        <pre><code>button:focus-visible {
+  outline: 3px solid var(--celeste);
+  outline-offset: 2px;
+}</code></pre>
+
+        <p>
+          Muchos tutoriales enseñan a sacar ese borde porque «queda feo». No lo
+          saques: es lo único que le indica a alguien que navega con teclado
+          dónde está parado. Si no te gusta cómo se ve, hacé uno lindo.
+        </p>
+
+        <h3>Respetá a quien pide menos movimiento</h3>
+
+        <p>
+          Los sistemas operativos tienen una opción para reducir animaciones,
+          porque a algunas personas les provocan mareos. El CSS puede
+          escucharla:
+        </p>
+
+        <pre><code>@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}</code></pre>
+
+        <h2 id="js">5. JavaScript: el comportamiento</h2>
+
+        <h3>Funciones chicas con nombre claro</h3>
+
+        <p>
+          Una función debería hacer una cosa y llamarse como esa cosa.
+          <code>guardarRegistros()</code>, <code>mostrarAviso()</code>,
+          <code>actualizarInterfaz()</code>. Si para nombrar una función
+          necesitás una «y» —<code>leerYDibujarYGuardar()</code>— probablemente
+          sean tres funciones.
+        </p>
+
+        <h3>textContent, no innerHTML</h3>
+
+        <div class="comparar">
+          <div class="mal">
+            <span class="etiqueta">Riesgoso</span>
+            <pre><code>p.innerHTML = observacion;</code></pre>
+            <p>
+              Si la persona escribió algo que parece HTML, el navegador lo
+              interpreta como código. Es la puerta de entrada de un ataque
+              clásico.
+            </p>
+          </div>
+          <div class="bien">
+            <span class="etiqueta">Seguro</span>
+            <pre><code>p.textContent = observacion;</code></pre>
+            <p>
+              Lo que escribió se muestra tal cual, como texto. Usá
+              <code>innerHTML</code> solo con texto que escribiste vos.
+            </p>
+          </div>
+        </div>
+
+        <h3>Leé a la defensiva</h3>
+
+        <p>
+          Todo lo que viene de afuera puede venir mal: lo que escribió una
+          persona, un archivo que importaron, lo que quedó guardado en el
+          navegador.
+        </p>
+
+        <pre><code>function leerRegistros() {
+  try {
+    const crudo = localStorage.getItem("registros");
+    const datos = JSON.parse(crudo);
+    return Array.isArray(datos) ? datos : [];
+  } catch (error) {
+    return [];   // si está roto, devolvemos una lista vacía
+  }
+}</code></pre>
+
+        <div class="idea">
+          <strong>Por qué importa</strong>
+          En nuestro proyecto, un solo dato dañado hacía que la página entera
+          dejara de cargar: no se veía el formulario, ni el historial, ni nada.
+          Con ese <code>try</code>, un dato roto se descarta solo y el resto
+          sigue funcionando.
+        </div>
+
+        <h3>Cuidado con los tipos</h3>
+
+        <p>
+          En JavaScript, <code>5 + 5</code> da 10 pero <code>"5" + "5"</code> da
+          <code>"55"</code>. Si un número quedó guardado como texto, los
+          promedios dan cualquier cosa. Convertí siempre que leas:
+        </p>
+
+        <pre><code>const intensidad = Number(registro.intensidad);</code></pre>
+
+        <h2 id="uiux">6. Decisiones de UI/UX</h2>
+
+        <p>
+          Esto no es «que quede lindo». Son decisiones que cambian si alguien
+          puede usar tu página o se frustra y se va.
+        </p>
+
+        <h3>Los botones se tocan con un dedo</h3>
+        <p>
+          En celular, algo de 30 píxeles es casi imposible de tocar sin errarle.
+          Apuntá a <strong>44 píxeles</strong> de alto y ancho como mínimo. En
+          nuestro calendario los días quedaron de 32 px y hubo que rehacer el
+          ancho de esa tarjeta.
+        </p>
+
+        <h3>En lo irreversible, el camino fácil es el seguro</h3>
+        <p>
+          Cuando abrís un cartel de «¿borrar todo?», el foco tiene que arrancar
+          en <strong>Cancelar</strong>, nunca en el botón que borra. Si alguien
+          aprieta Enter de reflejo, que cancele.
+        </p>
+
+        <h3>Decí qué se pierde, no «¿estás seguro?»</h3>
+        <div class="comparar">
+          <div class="mal">
+            <span class="etiqueta">Vago</span>
+            <p>«¿Estás seguro?»</p>
+            <p>No le da a nadie con qué decidir.</p>
+          </div>
+          <div class="bien">
+            <span class="etiqueta">Concreto</span>
+            <p>«Se van a borrar 12 registros. Esto no se puede deshacer.»</p>
+            <p>Y si podés, ofrecé la salida: «descargalos antes».</p>
+          </div>
+        </div>
+
+        <h3>No interrumpas a quien está escribiendo</h3>
+        <p>
+          Si tu página se actualiza sola, no la recargues mientras alguien
+          escribe: le borrás lo que estaba cargando. Mostrale un aviso con un
+          botón y que decida cuándo.
+        </p>
+
+        <h3>No dependas solo del color</h3>
+        <p>
+          Nuestro calendario pinta los días de rojo a verde, pero además pone
+          una carita distinta en cada nivel. Quien no distingue bien los
+          colores lee la cara. Cuando uses color para comunicar algo, sumale
+          una segunda señal: una forma, un ícono, un texto.
+        </p>
+
+        <h3>Si el JavaScript falla, que igual se vea</h3>
+        <p>
+          Es tentador poner <code>opacity: 0</code> en el CSS y que el
+          JavaScript lo muestre al aparecer. Si el JavaScript falla, el
+          contenido queda invisible <em>para siempre</em>. La clase que oculta
+          tiene que ponerla el JavaScript: así, si no corre, no oculta nada.
+        </p>
+
+        <h3>Mensajes que dicen algo</h3>
+        <p>
+          «Error» no ayuda. «El archivo no tiene el formato esperado» sí. Y
+          cuando algo sale bien, decilo también: «Se actualizaron 12
+          registros».
+        </p>
+
+        <h2 id="privacidad">7. Privacidad</h2>
+
+        <p>
+          Si tu página guarda algo de quien la usa, tenés que contarlo. Y acá va
+          la regla más importante de toda esta guía:
+        </p>
+
+        <div class="idea">
+          <strong>El aviso se escribe leyendo tu código</strong>
+          No copies uno de internet. Nos pidieron «un aviso de cookies» y al
+          revisar el código descubrimos que la página
+          <strong>no usa ni una sola cookie</strong>. Poner el cartelito típico
+          habría sido decir algo falso sobre nuestro propio proyecto.
+        </div>
+
+        <p>Un aviso honesto responde cuatro preguntas:</p>
+
+        <ol>
+          <li><strong>Qué se guarda.</strong> Con nombres concretos.</li>
+          <li>
+            <strong>Dónde.</strong> ¿En el dispositivo? ¿En un servidor? ¿Se
+            envía a alguien?
+          </li>
+          <li><strong>Quién puede verlo.</strong> Ojo con las computadoras compartidas.</li>
+          <li><strong>Cómo se borra.</strong> Y dale un botón para hacerlo.</li>
+        </ol>
+
+        <div class="ojo">
+          <strong>Mantenelo al día</strong>
+          Cuando agregamos la visita guiada, hizo falta guardar un dato más.
+          Eso obligó a actualizar el aviso, que decía «se guardan dos cosas» y
+          las listaba. Si hubiéramos agregado el dato sin tocar el aviso, el
+          aviso habría pasado a ser mentira sin que nadie se diera cuenta.
+        </div>
+
+        <h2 id="git">8. Git y GitHub</h2>
+
+        <p>
+          <strong>Git</strong> guarda la historia de tu proyecto en tu
+          computadora. <strong>GitHub</strong> es un lugar en internet donde
+          subís esa historia para no perderla y para trabajar con otras
+          personas. Son cosas distintas: Git funciona sin internet.
+        </p>
+
+        <h3>Arrancar</h3>
+        <pre><code>git init                       # crear el repositorio
+git add .                      # marcar todo lo que querés guardar
+git commit -m "Primera versión de la página"
+</code></pre>
+
+        <h3>El ciclo de todos los días</h3>
+        <pre><code>git status                     # ¿qué cambió?
+git add index.html css/style.css
+git commit -m "Agregar el formulario de registro"
+git push                       # subirlo a GitHub</code></pre>
+
+        <h3>Qué es un buen mensaje de commit</h3>
+        <p>
+          El mensaje lo vas a leer dentro de seis meses, cuando no te acuerdes
+          de nada. Escribí <strong>qué cambió</strong>, y si la decisión no es
+          obvia, <strong>por qué</strong>.
+        </p>
+
+        <div class="comparar">
+          <div class="mal">
+            <span class="etiqueta">No sirve</span>
+            <p><code>cambios</code></p>
+            <p><code>arreglos</code></p>
+            <p><code>asdasd</code></p>
+          </div>
+          <div class="bien">
+            <span class="etiqueta">Sirve</span>
+            <p><code>Agregar el calendario mensual</code></p>
+            <p>
+              <code
+                >Corregir el promedio: las intensidades guardadas como texto se
+                sumaban mal</code
+              >
+            </p>
+          </div>
+        </div>
+
+        <h3>Commits chicos y seguidos</h3>
+        <p>
+          Un commit por cosa terminada, no uno gigante al final del día. Si algo
+          se rompe, podés volver a un punto donde funcionaba sin perder todo lo
+          demás.
+        </p>
+
+        <h3>Publicar con GitHub Pages</h3>
+        <p>
+          En tu repositorio, entrá a <em>Settings → Pages</em> y elegí la rama
+          desde la que querés publicar. A los minutos tu página está en
+          <code>https://tu-usuario.github.io/tu-repositorio/</code>, gratis y
+          con HTTPS.
+        </p>
+
+        <div class="ojo">
+          <strong>Un detalle que rompe proyectos</strong>
+          Ahí tu página no vive en la raíz del dominio, sino en una subcarpeta.
+          Si escribís rutas que empiezan con barra —<code>/css/style.css</code>—
+          van a apuntar al lugar equivocado. Usá rutas relativas:
+          <code>css/style.css</code>, <code>../img/logo.png</code>.
+        </div>
+
+        <h2 id="ramas">9. Trabajar en equipo con ramas</h2>
+
+        <h3>Qué es una rama</h3>
+        <p>
+          Imaginá que el proyecto es un cuaderno. La rama
+          <strong>principal</strong> —se llama <code>main</code>— es la versión
+          en limpio: lo que funciona, lo que está publicado. Cuando querés
+          probar algo, en vez de escribir encima del cuaderno en limpio, sacás
+          una <strong>fotocopia</strong> y trabajás ahí. Si sale bien, pasás los
+          cambios al limpio. Si sale mal, tirás la fotocopia y no pasó nada.
+        </p>
+
+        <p>Esa fotocopia es una rama.</p>
+
+        <h3>Cómo se usa</h3>
+        <pre><code>git checkout -b calendario     # crear una rama y cambiarse a ella
+# ... trabajás, hacés commits ...
+git push -u origin calendario  # subirla a GitHub</code></pre>
+
+        <p>
+          En GitHub, esa rama aparece como algo separado de <code>main</code>.
+          Ahí abrís un <strong>Pull Request</strong>: un pedido de «miren esto
+          que hice, ¿lo pasamos al limpio?». Tus compañeros pueden leer los
+          cambios, comentar y pedir correcciones. Cuando está aprobado, se hace
+          <em>merge</em> y los cambios entran a <code>main</code>.
+        </p>
+
+        <h3>Por qué sirve en equipo</h3>
+        <ul>
+          <li>
+            Cada uno trabaja en lo suyo sin pisar al otro. Vos en el calendario,
+            tu compañera en las estadísticas.
+          </li>
+          <li>
+            <code>main</code> siempre funciona. Si alguien rompe algo, lo rompe
+            en su rama.
+          </li>
+          <li>
+            Antes de que algo entre, alguien más lo mira. Se aprende mucho
+            leyendo código ajeno.
+          </li>
+        </ul>
+
+        <h3>Los conflictos</h3>
+        <p>
+          Si dos personas cambian <em>las mismas líneas del mismo archivo</em>,
+          Git no sabe cuál vale y avisa que hay un conflicto. No es un error
+          tuyo ni algo grave: te muestra las dos versiones y elegís.
+        </p>
+        <p>Para que pasen poco:</p>
+        <ul>
+          <li>Repártanse las tareas por archivo o por sección.</li>
+          <li>Ramas cortas: una tarea, se mezcla, se borra la rama.</li>
+          <li>
+            Traigan seguido los cambios de los demás con
+            <code>git pull origin main</code>. Cuanto más tiempo pasa una rama
+            separada, más se aleja y más difícil es mezclarla.
+          </li>
+        </ul>
+
+        <h3>Ponerle nombre a las ramas</h3>
+        <pre><code>calendario
+arreglo-promedio
+estilos-movil</code></pre>
+        <p>
+          Que el nombre diga qué hay adentro. <code>rama2</code> y
+          <code>prueba-final-final</code> no le sirven a nadie.
+        </p>
+
+        <h2 id="ia">10. Trabajar con una IA</h2>
+
+        <p>
+          Una IA te puede ayudar mucho, y también te puede hundir si la usás
+          mal. La diferencia está casi toda en cómo le pedís las cosas.
+        </p>
+
+        <h3>El error más común: pedir todo de una</h3>
+
+        <div class="comparar">
+          <div class="mal">
+            <span class="etiqueta">Así no</span>
+            <p>«Hacé una página para registrar emociones con calendario, estadísticas y que se pueda descargar.»</p>
+            <p>
+              Te va a devolver cientos de líneas de golpe. Si algo anda mal, no
+              sabés dónde. Si querés cambiar algo, no entendés qué tocar. Y no
+              aprendiste nada: tenés código que no sabés explicar.
+            </p>
+          </div>
+          <div class="bien">
+            <span class="etiqueta">Así sí</span>
+            <p>«Quiero un formulario con un campo de fecha, un select de emociones y un textarea. Solo el HTML, sin estilos todavía.»</p>
+            <p>
+              Lo mirás, lo entendés, lo probás. Y recién después pedís lo que
+              sigue.
+            </p>
+          </div>
+        </div>
+
+        <h3>Desglosá antes de pedir</h3>
+        <p>
+          Agarrá tu idea y partila en pedazos que se puedan probar por separado.
+          Para nuestro proyecto sería más o menos así:
+        </p>
+        <ol>
+          <li>El HTML del formulario.</li>
+          <li>Que al enviarlo se guarde en el navegador.</li>
+          <li>Que se muestre la lista de lo guardado.</li>
+          <li>Los estilos de esa lista.</li>
+          <li>El buscador.</li>
+          <li>El calendario.</li>
+        </ol>
+        <p>
+          Cada paso se prueba en el navegador antes de pedir el siguiente. Si el
+          paso 3 quedó raro, lo arreglás ahí, no cuando ya hay seis capas
+          encima.
+        </p>
+
+        <h3>Dale contexto</h3>
+        <p>
+          Una IA no adivina. Contale qué hay, qué usás y para quién es:
+        </p>
+        <pre><code>«Tengo un index.html con un formulario que ya guarda en
+localStorage bajo la clave "registros". Quiero agregar una lista
+que muestre lo guardado. Es para un taller de secundaria, así que
+preferí código simple y sin librerías.»</code></pre>
+
+        <h3>Pedí que te explique</h3>
+        <p>
+          Agregá «explicame qué hace cada parte». Si no entendés el código que
+          te dio, no lo pegues: preguntá. El objetivo del taller es que
+          aprendas, no que la página exista.
+        </p>
+
+        <h3>Revisá siempre</h3>
+        <div class="ojo">
+          <strong>La IA se equivoca con mucha seguridad</strong>
+          Te va a dar código que parece perfecto y a veces está mal. En este
+          mismo proyecto, la visita guiada iluminaba la sección equivocada, y
+          había una prueba automática que daba «todo bien»... porque
+          comprobaba exactamente lo que el código hacía mal. Se descubrió
+          cuando una persona lo miró en la pantalla.
+        </div>
+        <p>
+          <strong>Probá en el navegador siempre.</strong> Que no tire errores no
+          significa que haga lo que querés.
+        </p>
+
+        <h3>Pedile que no haga de más</h3>
+        <p>
+          Si pediste un botón y te reescribió medio archivo, decíselo: «solo
+          agregá el botón, no cambies lo demás». Cambios chicos son cambios que
+          podés revisar.
+        </p>
+
+        <h3>Usala para entender, no solo para producir</h3>
+        <p>Estas preguntas valen más que «escribime esto»:</p>
+        <ul>
+          <li>«¿Por qué conviene <code>&lt;button&gt;</code> y no <code>&lt;div&gt;</code>?»</li>
+          <li>«¿Qué puede salir mal en este código?»</li>
+          <li>«¿Hay una forma más simple de hacer esto?»</li>
+          <li>«Explicame este error como si recién empezara.»</li>
+        </ul>
+
+        <h2 id="orden">11. Un orden para arrancar</h2>
+
+        <ol>
+          <li>Escribí en una frase qué hace tu página.</li>
+          <li>Dibujá en papel las secciones.</li>
+          <li>Anotá qué datos vas a guardar.</li>
+          <li>Creá los tres archivos y el repositorio (<code>git init</code>).</li>
+          <li>Escribí el HTML de todo, sin estilos. Feo pero completo.</li>
+          <li>Commit. Es tu punto de retorno.</li>
+          <li>Estilos básicos: colores, tipografía, espacios.</li>
+          <li>La primera función de JavaScript: la más importante de todas.</li>
+          <li>Probala en el navegador. Commit.</li>
+          <li>Subila a GitHub y publicala con Pages, aunque esté a medias.</li>
+          <li>De ahí en más: una función por vez, probar, commit.</li>
+        </ol>
+
+        <div class="idea">
+          <strong>Publicá temprano</strong>
+          Tener la página en internet desde el primer día, aunque esté
+          incompleta, te obliga a que ande de verdad y te deja mostrarla. Es
+          muchísimo mejor que tener algo perfecto en tu computadora que nadie
+          vio nunca.
+        </div>
+
+        <h2 id="cierre">Para cerrar</h2>
+
+        <p>Si te llevás cinco cosas de todo esto:</p>
+
+        <ol>
+          <li><strong>Lo que viene de afuera puede venir mal.</strong> Leé a la defensiva.</li>
+          <li><strong>Medí antes de suponer.</strong> Nuestro logo pesaba 1,9 MB para mostrarse a 40 píxeles y nadie lo había notado.</li>
+          <li><strong>Pensá los datos al principio.</strong> Faltaba saber si una emoción era agradable o difícil, y no se notó hasta el calendario.</li>
+          <li><strong>Lo que decís sobre tu programa tiene que ser verdad.</strong> El aviso de privacidad se escribe mirando el código.</li>
+          <li><strong>Una prueba que pasa no significa que el código esté bien.</strong> Significa que hace lo que la prueba dice. Si la prueba está escrita mirando el código en vez de lo que tiene que lograr, se equivocan juntas.</li>
+        </ol>
+
+        <a class="volver" href="index.html">← Volver a Cómo funciona</a>
+      </article>
+    </main>
+
+    <footer id="pie-pagina">
+      <img
+        src="../img/icono-circular.png"
+        alt="logo Proyecto Nosotros"
+        class="logo-icon-footer"
+      />
+      <p><strong>Registro Emocional Web</strong></p>
+      <p>Tecno-LAB | Proyecto Nosotros</p>
+    </footer>
+  </body>
+</html>
