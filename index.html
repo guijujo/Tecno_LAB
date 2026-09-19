@@ -7,8 +7,11 @@
       name="description"
       content="Registro emocional educativo de TECNO-LAB: anotá tu emoción, su intensidad y una observación. Los datos quedan guardados solo en tu navegador."
     />
+    <meta name="theme-color" content="#0d1b2a" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="img/icono-512.png" />
     <title>Registro Emocional - TECNO-LAB</title>
   </head>
   <body>
@@ -395,6 +398,17 @@
       </section>
     </main>
 
+    <div
+      id="aviso-actualizacion"
+      class="aviso-actualizacion"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <span>Hay una versión nueva de la página.</span>
+      <button id="btn-actualizar-version" type="button">Actualizar</button>
+    </div>
+
     <footer id="pie-pagina">
       <img
         src="img/icono-circular.png"
@@ -405,12 +419,9 @@
       <p>Tecno-LAB | Proyecto Nosotros</p>
       <p>Tus registros son privados.</p>
     </footer>
-    <script
-      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
-      integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
+    <!-- jsPDF 2.5.1, servido desde el repo para que el PDF también
+         funcione sin conexión. -->
+    <script src="js/jspdf.umd.min.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

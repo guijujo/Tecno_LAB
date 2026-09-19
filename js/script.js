@@ -1518,6 +1518,76 @@ botonMesSiguiente.addEventListener("click", () => {
 });
 
 /* ---------------------------------------------------------------
+   Service worker (funcionamiento sin conexión)
+
+   Si el navegador no lo soporta, o la página se abre con file:// o sin
+   HTTPS, no pasa nada: el registro falla en silencio y la página sigue
+   funcionando igual, solo que sin modo offline.
+--------------------------------------------------------------- */
+function avisarVersionNueva(registro) {
+  const aviso = document.getElementById("aviso-actualizacion");
+  const boton = document.getElementById("btn-actualizar-version");
+
+  aviso.hidden = false;
+  boton.addEventListener(
+    "click",
+    () => {
+      boton.disabled = true;
+      boton.textContent = "Actualizando…";
+      if (registro.waiting) {
+        registro.waiting.postMessage("activar-ahora");
+      }
+    },
+    { once: true },
+  );
+}
+
+function registrarServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  // Nunca se recarga de prepotencia: recargar mientras alguien escribe
+  // una observación le borraría lo que estaba cargando. La página se
+  // actualiza recién cuando aceptan el aviso.
+  let recargando = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (recargando) {
+      return;
+    }
+    recargando = true;
+    window.location.reload();
+  });
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").then(
+      (registro) => {
+        registro.addEventListener("updatefound", () => {
+          const entrante = registro.installing;
+          if (!entrante) {
+            return;
+          }
+
+          entrante.addEventListener("statechange", () => {
+            // Solo se avisa si ya había una versión controlando la
+            // página: en la primera visita no hay nada que actualizar.
+            if (
+              entrante.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              avisarVersionNueva(registro);
+            }
+          });
+        });
+      },
+      () => {
+        /* sin modo offline, pero la página anda igual */
+      },
+    );
+  });
+}
+
+/* ---------------------------------------------------------------
    Arranque
 --------------------------------------------------------------- */
 refrescarFecha();
@@ -1525,3 +1595,4 @@ actualizarIntensidad();
 renderLeyenda();
 actualizarInterfaz();
 iniciarAvisoPrivacidad();
+registrarServiceWorker();
