@@ -181,7 +181,7 @@ const sugerencias = {
     intro: "La gratitud rinde más cuando sale del registro y llega a alguien.",
     ideas: [
       "Si hay una persona detrás de esto, decíselo. Suele hacerle bien a los dos.",
-      "Anotá tres cosas más, aunque sean chicas, que hoy también agradecés.",
+      "Anotá tres cosas más, aunque sean pequeñas, que hoy también agradecés.",
     ],
   },
   amor: {
@@ -1670,6 +1670,64 @@ botonMesSiguiente.addEventListener("click", () => {
 });
 
 /* ---------------------------------------------------------------
+   Aparición progresiva al desplazarse
+
+   Las tarjetas que todavía están abajo del pliegue entran con un fundido
+   corto cuando se llega a ellas. La clase que las oculta la pone el JS,
+   nunca el HTML: si el JS no corre o el navegador no soporta
+   IntersectionObserver, la página se ve entera igual.
+--------------------------------------------------------------- */
+const SELECTOR_REVELABLES =
+  ".cajaregistrar, #historial, #calendario, #estadisticas, #pie-pagina";
+
+function revelarTodo() {
+  document
+    .querySelectorAll(".revelar")
+    .forEach((elemento) => elemento.classList.add("revelado"));
+}
+
+function iniciarRevelado() {
+  if (!("IntersectionObserver" in window)) {
+    return;
+  }
+
+  // Solo se prepara lo que todavía no se ve: ocultar algo que ya está en
+  // pantalla produciría un parpadeo al cargar.
+  const pendientes = [...document.querySelectorAll(SELECTOR_REVELABLES)].filter(
+    (elemento) =>
+      elemento.getBoundingClientRect().top > window.innerHeight * 0.9,
+  );
+
+  pendientes.forEach((elemento) => elemento.classList.add("revelar"));
+
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      entradas.forEach((entrada) => {
+        if (entrada.isIntersecting) {
+          entrada.target.classList.add("revelado");
+          observador.unobserve(entrada.target);
+        }
+      });
+    },
+    { threshold: 0.06 },
+  );
+
+  pendientes.forEach((elemento) => observador.observe(elemento));
+
+  // Red de seguridad: si el observador no llegara a disparar, nada que
+  // esté a la vista puede quedarse en blanco. Solo destapa lo que ya
+  // está en pantalla, así lo de más abajo conserva su aparición.
+  setTimeout(() => {
+    pendientes.forEach((elemento) => {
+      const caja = elemento.getBoundingClientRect();
+      if (caja.top < window.innerHeight && caja.bottom > 0) {
+        elemento.classList.add("revelado");
+      }
+    });
+  }, 3000);
+}
+
+/* ---------------------------------------------------------------
    Visita guiada
 
    Un recuadro que ilumina una parte de la página y un globo que la
@@ -1751,6 +1809,8 @@ function iniciarVisita() {
 
   visitaActiva = true;
   pasoActual = 0;
+  // Nada puede estar esperando a aparecer mientras la visita lo señala.
+  revelarTodo();
   capaVisita.hidden = false;
   // El primer recuadro aparece donde corresponde, sin venir volando
   // desde la esquina.
@@ -1759,6 +1819,17 @@ function iniciarVisita() {
   requestAnimationFrame(() => focoVisita.classList.remove("sin-animacion"));
 
   window.addEventListener("resize", reubicarVisita);
+  window.addEventListener("scroll", seguirConLaVista, { passive: true });
+}
+
+// Si la página se mueve durante la visita, el recuadro la acompaña.
+// Sin envolverlo en requestAnimationFrame a propósito: son dos medidas
+// por evento, el navegador ya limita el scroll a un cuadro, y así no
+// depende de que la pestaña esté dibujándose.
+function seguirConLaVista() {
+  if (visitaActiva) {
+    posicionarVisita();
+  }
 }
 
 function terminarVisita() {
@@ -1774,6 +1845,7 @@ function terminarVisita() {
   visitaActiva = false;
   capaVisita.hidden = true;
   window.removeEventListener("resize", reubicarVisita);
+  window.removeEventListener("scroll", seguirConLaVista);
   marcarVisitaVista();
   botonVerVisita.focus();
 }
@@ -1810,31 +1882,54 @@ function reubicarVisita() {
     return;
   }
 
-  const altoPantalla = window.innerHeight;
-  const anchoPantalla = document.documentElement.clientWidth;
-  const margen = 8;
-  const borde = 4;
-
   // Lo que vive dentro de la barra de navegación ya está siempre a la
   // vista: no hay que desplazar nada ni esquivar la barra. Si se la
   // esquivara, el recuadro terminaría debajo de ella, iluminando lo que
   // haya en ese lugar en vez del menú.
-  const enLaBarra = barraNavegacion.contains(objetivo);
-  let minArriba = borde;
-
-  if (!enLaBarra) {
+  if (!barraNavegacion.contains(objetivo)) {
     // Una sección alta no entra entera: se la alinea arriba y se ilumina
     // solo su parte superior, para que quede lugar para el globo.
-    const esAlto = objetivo.getBoundingClientRect().height > altoPantalla * 0.6;
-    objetivo.scrollIntoView({ block: esAlto ? "start" : "center" });
+    const esAlto =
+      objetivo.getBoundingClientRect().height > window.innerHeight * 0.6;
+
+    // Instantáneo a propósito, aunque el resto de la página se desplace
+    // suave: el recuadro es de posición fija y se calcula apenas termina
+    // el salto. Si el desplazamiento siguiera animándose, el objetivo se
+    // movería por debajo y el foco quedaría corrido.
+    objetivo.scrollIntoView({
+      block: esAlto ? "start" : "center",
+      behavior: "instant",
+    });
 
     const limiteArriba = barraNavegacion.getBoundingClientRect().height + 8;
-    minArriba = limiteArriba - margen;
-
     if (objetivo.getBoundingClientRect().top < limiteArriba) {
-      window.scrollBy(0, objetivo.getBoundingClientRect().top - limiteArriba);
+      window.scrollBy({
+        top: objetivo.getBoundingClientRect().top - limiteArriba,
+        behavior: "instant",
+      });
     }
   }
+
+  posicionarVisita();
+}
+
+// Solo coloca el recuadro y el globo según dónde está el objetivo ahora.
+// Se usa también al desplazar o redimensionar, para que el foco no se
+// despegue de lo que está señalando.
+function posicionarVisita() {
+  const objetivo = document.querySelector(PASOS_VISITA[pasoActual].objetivo);
+  if (!objetivo) {
+    return;
+  }
+
+  const altoPantalla = window.innerHeight;
+  const anchoPantalla = document.documentElement.clientWidth;
+  const margen = 8;
+  const borde = 4;
+  const enLaBarra = barraNavegacion.contains(objetivo);
+  const minArriba = enLaBarra
+    ? borde
+    : barraNavegacion.getBoundingClientRect().height + 8 - margen;
 
   const caja = objetivo.getBoundingClientRect();
 
@@ -1944,9 +2039,14 @@ function registrarServiceWorker() {
   // Nunca se recarga de prepotencia: recargar mientras alguien escribe
   // una observación le borraría lo que estaba cargando. La página se
   // actualiza recién cuando aceptan el aviso.
+  // En la primera visita el worker toma control con clients.claim() y eso
+  // también dispara controllerchange. Recargar ahí sería una recarga de
+  // más: solo interesa cuando se reemplaza a un worker que ya controlaba.
+  const habiaWorkerPrevio = Boolean(navigator.serviceWorker.controller);
   let recargando = false;
+
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (recargando) {
+    if (recargando || !habiaWorkerPrevio) {
       return;
     }
     recargando = true;
@@ -1989,4 +2089,5 @@ actualizarIntensidad();
 renderLeyenda();
 actualizarInterfaz();
 iniciarAvisoPrivacidad();
+iniciarRevelado();
 registrarServiceWorker();

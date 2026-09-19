@@ -15,7 +15,7 @@
    no rompe nada porque los archivos igual se refrescan en segundo plano.
 */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `registro-emocional-${VERSION}`;
 
 const RECURSOS = [
@@ -57,6 +57,15 @@ self.addEventListener("message", (evento) => {
   }
 });
 
+// ¿Es la portada de la aplicación, y no otra página del sitio? Las rutas
+// se comparan contra el alcance del worker, que en GitHub Pages es
+// /Tecno_LAB/ y no la raíz del dominio.
+function esPortadaDeLaApp(url) {
+  const ruta = new URL(url).pathname;
+  const base = new URL("./", self.location).pathname;
+  return ruta === base || ruta === `${base}index.html`;
+}
+
 self.addEventListener("fetch", (evento) => {
   const pedido = evento.request;
 
@@ -70,18 +79,33 @@ self.addEventListener("fetch", (evento) => {
   }
 
   if (pedido.mode === "navigate") {
+    const esLaApp = esPortadaDeLaApp(pedido.url);
+
     evento.respondWith(
       fetch(pedido)
         .then((respuesta) => {
-          const copia = respuesta.clone();
-          caches.open(CACHE).then((cache) => cache.put("./index.html", copia));
+          // Solo la portada actualiza la copia guardada. Sin esta guarda,
+          // visitar otra página del sitio —los diagramas de docs/— la
+          // reemplazaría, y sin conexión la aplicación mostraría eso.
+          if (esLaApp && respuesta.ok) {
+            const copia = respuesta.clone();
+            caches.open(CACHE).then((cache) => cache.put("./index.html", copia));
+          }
           return respuesta;
         })
-        .catch(() =>
-          caches
-            .match("./index.html")
-            .then((guardada) => guardada || caches.match("./")),
-        ),
+        .catch(() => {
+          if (esLaApp) {
+            return caches
+              .match("./index.html")
+              .then((guardada) => guardada || caches.match("./"));
+          }
+
+          // Las demás páginas no están precargadas: si no hay copia,
+          // corresponde fallar. Devolver la aplicación sería engañoso.
+          return caches
+            .match(pedido)
+            .then((guardada) => guardada || Response.error());
+        }),
     );
     return;
   }

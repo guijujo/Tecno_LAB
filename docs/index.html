@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Diagramas del Registro Emocional de TECNO-LAB: arquitectura, recorrido de los datos y camino de un registro."
+    />
+    <meta name="theme-color" content="#0d1b2a" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" type="image/png" href="../img/favicon.png" />
+    <title>Cómo funciona · Registro Emocional</title>
+    <style>
+      .portada {
+        width: var(--ancho-caja);
+        margin: 30px auto;
+        padding: 20px;
+        border: 1px solid var(--borde);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ffffff, #eef9ff);
+        box-shadow: 0 14px 30px rgba(10, 25, 38, 0.08);
+      }
+
+      .portada h1 {
+        margin-bottom: 8px;
+        font-size: 1.5rem;
+      }
+
+      .portada-intro {
+        margin-bottom: 24px;
+        color: var(--texto-suave);
+        font-style: italic;
+        line-height: 1.5;
+      }
+
+      .lista-diagramas {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 0 0 24px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .lista-diagramas a {
+        display: block;
+        padding: 16px;
+        border: 1px solid #d8eefc;
+        border-left: 4px solid var(--celeste-fuerte);
+        border-radius: 6px;
+        background: linear-gradient(180deg, #ffffff, #f2fbff);
+        color: var(--texto);
+        text-decoration: none;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .lista-diagramas a:hover,
+      .lista-diagramas a:focus-visible {
+        border-left-color: var(--celeste-oscuro);
+        outline: none;
+        box-shadow: 0 4px 10px rgba(10, 25, 38, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .diagrama-titulo {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+
+      .diagrama-detalle {
+        color: var(--texto-suave);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .portada-nota {
+        padding: 14px 16px;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+        background-color: #f4fbff;
+        color: var(--texto-suave);
+        font-size: 0.88rem;
+        line-height: 1.55;
+      }
+
+      .volver {
+        display: inline-block;
+        margin-top: 18px;
+        color: var(--celeste-fuerte);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo">
+        <a href="../index.html">
+          <img
+            src="../img/favicon.png"
+            alt="Proyecto Nosotros"
+            class="logo-icon"
+          />
+        </a>
+        <span class="logo-texto">Registro Emocional</span>
+      </div>
+    </nav>
+
+    <main>
+      <section class="portada">
+        <h1>Cómo funciona</h1>
+        <p class="portada-intro">
+          Tres diagramas que muestran por dentro el Registro Emocional. Se abren
+          en esta misma pestaña y tienen tema claro y oscuro, recorridos
+          guiados y exportación a imagen.
+        </p>
+
+        <ul class="lista-diagramas">
+          <li>
+            <a href="arquitectura.html">
+              <span class="diagrama-titulo">Arquitectura</span>
+              <span class="diagrama-detalle"
+                >Las piezas del proyecto y el límite del dispositivo: qué queda
+                adentro y qué no.</span
+              >
+            </a>
+          </li>
+          <li>
+            <a href="datos.html">
+              <span class="diagrama-titulo">Recorrido de los datos</span>
+              <span class="diagrama-detalle"
+                >De la carga al guardado y de vuelta a la pantalla, incluida la
+                importación de un respaldo.</span
+              >
+            </a>
+          </li>
+          <li>
+            <a href="flujo.html">
+              <span class="diagrama-titulo">Registrar una emoción</span>
+              <span class="diagrama-detalle"
+                >El camino paso a paso, con la rama de acompañamiento que
+                aparece cuando la intensidad es alta.</span
+              >
+            </a>
+          </li>
+        </ul>
+
+        <p class="portada-nota">
+          Los diagramas se generan a partir de las fuentes en
+          <code>docs/fuentes</code>, así que describen el proyecto real y no un
+          dibujo aparte. Necesitan conexión la primera vez: a diferencia de la
+          aplicación, no se guardan para usarse sin internet.
+        </p>
+
+        <a class="volver" href="../index.html">← Volver al Registro Emocional</a>
+      </section>
+    </main>
+
+    <footer id="pie-pagina">
+      <img
+        src="../img/icono-circular.png"
+        alt="logo Proyecto Nosotros"
+        class="logo-icon-footer"
+      />
+      <p><strong>Registro Emocional Web</strong></p>
+      <p>Tecno-LAB | Proyecto Nosotros</p>
+    </footer>
+  </body>
+</html>
