@@ -238,6 +238,31 @@
           <button id="btn-listo-sugerencia" type="button">Entendido</button>
         </aside>
 
+        <aside
+          id="modal-borrar"
+          class="panel-borrar"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="titulo-borrar"
+          aria-describedby="texto-borrar"
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          <h2 id="titulo-borrar">¿Borrar todos tus datos?</h2>
+          <p id="texto-borrar"></p>
+          <p class="borrar-aviso">
+            Esto no se puede deshacer. Si querés conservar tus registros,
+            cancelá y descargalos antes desde
+            <strong>Descargar Historial</strong>.
+          </p>
+          <div class="borrar-acciones">
+            <button id="btn-cancelar-borrar" type="button">Cancelar</button>
+            <button id="btn-confirmar-borrar" class="btn-peligro" type="button">
+              Sí, borrar todo
+            </button>
+          </div>
+        </aside>
+
         <div id="modal-overlay-bg" class="modal-overlay-bg" hidden></div>
 
         <div
@@ -255,19 +280,114 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="titulo-privacidad"
+            tabindex="-1"
           >
-            <h3 id="titulo-privacidad">Nota de privacidad</h3>
-            <p>
-              Este proyecto guarda los registros
-              <strong>de forma local</strong> en el caso de ser descargados como
-              práctica educativa en el botón de "<i>Descargar Historial</i>",
-              para poder ofrecerlos como muestra a un profesional y/o pegarlo en
-              "<i>Actualizar Registros</i>" para guardarlos en el historial.
-            </p>
-            <p>
-              <strong>IMPORTANTE:</strong> No reemplaza el acompañamiento de una
-              persona adulta o profesional.
-            </p>
+            <button
+              id="btn-cerrar-privacidad"
+              class="btn-cerrar-privacidad"
+              type="button"
+              aria-label="Cerrar la nota de privacidad"
+            >
+              X
+            </button>
+
+            <h3 id="titulo-privacidad">Privacidad y datos</h3>
+
+            <ul class="privacidad-resumen">
+              <li>
+                <strong>Esta página no usa cookies</strong> ni ningún sistema de
+                seguimiento, publicidad o estadísticas.
+              </li>
+              <li>
+                Lo que escribís
+                <strong>se guarda solo en este navegador</strong>: no hay
+                servidor y no se envía a ningún lado.
+              </li>
+              <li>
+                Es una práctica educativa y
+                <strong
+                  >no reemplaza el acompañamiento de una persona adulta o
+                  profesional</strong
+                >.
+              </li>
+            </ul>
+
+            <details id="privacidad-detalle" class="privacidad-detalle">
+              <summary>Ver el detalle completo</summary>
+
+              <h4>Qué se guarda y dónde</h4>
+              <p>
+                Todo queda en el almacenamiento local de este navegador, en este
+                dispositivo. Son tres cosas:
+              </p>
+              <ul>
+                <li>
+                  <code>registros_emocionales</code>: tus registros, con fecha,
+                  emoción, intensidad y observación.
+                </li>
+                <li>
+                  <code>nota_educativa_aceptada</code>: una marca para no
+                  mostrarte este aviso en cada visita.
+                </li>
+                <li>
+                  <code>visita_guiada_vista</code>: una marca para no repetirte
+                  la visita guiada cada vez que entrás.
+                </li>
+              </ul>
+              <p>
+                Además, el navegador guarda una copia de los archivos de la
+                página para que funcione sin conexión. Son archivos del sitio,
+                no datos tuyos.
+              </p>
+
+              <h4>Cookies y servicios de terceros</h4>
+              <p>
+                No hay ninguno. La página no usa cookies y no carga nada desde
+                otros sitios: ni fuentes, ni analítica, ni botones de redes
+                sociales. Tampoco hay publicidad.
+              </p>
+
+              <h4>Quién puede ver tus registros</h4>
+              <p>
+                Cualquier persona que use este mismo navegador en este
+                dispositivo. Si estás en una computadora compartida —del aula,
+                de la escuela o de tu casa— tené en cuenta que tus registros
+                quedan ahí hasta que los borres.
+              </p>
+
+              <h4>Cómo borrar todo</h4>
+              <p>
+                Con el botón <strong>Borrar todos mis datos</strong> que está al
+                pie de la página: elimina tus registros y esta marca de
+                aceptación, y te pide confirmación antes. También podés hacerlo
+                desde la configuración de tu navegador, borrando los datos de
+                este sitio.
+              </p>
+
+              <h4>Si descargás tus registros</h4>
+              <p>
+                El archivo JSON o el PDF salen del navegador y quedan guardados
+                en tu dispositivo. Desde ese momento, dónde los guardás y con
+                quién los compartís depende de vos.
+              </p>
+
+              <h4>Dónde está publicada la página</h4>
+              <p>
+                Los archivos se sirven desde GitHub Pages. Como cualquier
+                servidor web, puede registrar datos técnicos de la visita, por
+                ejemplo la dirección IP. Eso corresponde al servicio de
+                alojamiento y no tiene relación con tus registros, que nunca
+                salen de tu dispositivo.
+              </p>
+
+              <h4>Una aclaración</h4>
+              <p>
+                Este es un proyecto escolar del taller y este aviso está escrito
+                en lenguaje simple para que se entienda. No es un texto legal
+                redactado por profesionales.
+              </p>
+            </details>
+
             <button id="btnEntendido" type="button">Aceptar y continuar</button>
           </div>
         </div>
@@ -398,6 +518,38 @@
       </section>
     </main>
 
+    <div id="visita-guiada" class="visita-guiada" hidden>
+      <div id="visita-foco" class="visita-foco"></div>
+      <div
+        id="visita-globo"
+        class="visita-globo"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="visita-titulo"
+        aria-describedby="visita-texto"
+        tabindex="-1"
+      >
+        <p id="visita-paso" class="visita-paso"></p>
+        <h2 id="visita-titulo" class="visita-titulo"></h2>
+        <p id="visita-texto" class="visita-texto"></p>
+        <div class="visita-acciones">
+          <button id="btn-visita-saltar" class="visita-secundario" type="button">
+            Saltar
+          </button>
+          <div class="visita-navegacion">
+            <button
+              id="btn-visita-anterior"
+              class="visita-secundario"
+              type="button"
+            >
+              Anterior
+            </button>
+            <button id="btn-visita-siguiente" type="button">Siguiente</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div
       id="aviso-actualizacion"
       class="aviso-actualizacion"
@@ -418,6 +570,31 @@
       <p><strong>Registro Emocional Web</strong></p>
       <p>Tecno-LAB | Proyecto Nosotros</p>
       <p>Tus registros son privados.</p>
+      <p>
+        <button
+          id="btn-ver-visita"
+          class="enlace-privacidad"
+          type="button"
+        >
+          Visita guiada
+        </button>
+        <span class="separador-pie" aria-hidden="true">·</span>
+        <button
+          id="btn-ver-privacidad"
+          class="enlace-privacidad"
+          type="button"
+        >
+          Privacidad y datos
+        </button>
+        <span class="separador-pie" aria-hidden="true">·</span>
+        <button
+          id="btn-borrar-datos"
+          class="enlace-privacidad enlace-peligro"
+          type="button"
+        >
+          Borrar todos mis datos
+        </button>
+      </p>
     </footer>
     <!-- jsPDF 2.5.1, servido desde el repo para que el PDF también
          funcione sin conexión. -->
