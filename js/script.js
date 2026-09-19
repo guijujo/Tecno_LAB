@@ -1,38 +1,12 @@
-let emocionSeleccionada = "";
+"use strict";
 
-const botonMenu = document.getElementById("btn-menu");
-const barraNavegacion = document.querySelector(".navbar");
-const botonActualizar = document.getElementById("btn-actualizar-registros");
-const panelActualizar = document.getElementById("actualizar-registros");
-const overlayModal = document.getElementById("modal-overlay-bg");
-const botonCerrarActualizar = document.getElementById("btn-cerrar-actualizar");
-const archivoRegistros = document.getElementById("archivo-registros");
-
-botonMenu.addEventListener("click", () => {
-  const estaAbierto = barraNavegacion.classList.toggle("menu-abierto");
-  botonMenu.setAttribute("aria-expanded", estaAbierto);
-  botonMenu.setAttribute(
-    "aria-label",
-    estaAbierto ? "Cerrar menú" : "Abrir menú",
-  );
-});
-
-// 1. Cargar la fecha actual en formato compatible (AAAA-MM-DD)
-const hoy = new Date();
-const anio = hoy.getFullYear();
-const mes = String(hoy.getMonth() + 1).padStart(2, "0");
-const dia = String(hoy.getDate()).padStart(2, "0");
-document.getElementById("fecha").value = `${anio}-${mes}-${dia}`;
-
-// Actualizar etiqueta del rango de intensidad
-const slider = document.getElementById("intensidad");
-const valorIntensidad = document.getElementById("valor-intensidad");
-const descripcionIntensidad = document.getElementById("descripcion-intensidad");
-const botonBuscarHistorial = document.getElementById("btn-buscar-historial");
-const busquedaHistorial = document.getElementById("busqueda-historial");
-const campoBusquedaHistorial = document.getElementById(
-  "campo-busqueda-historial",
-);
+/* ---------------------------------------------------------------
+   Constantes
+--------------------------------------------------------------- */
+const CLAVE_REGISTROS = "registros_emocionales";
+const CLAVE_PRIVACIDAD = "nota_educativa_aceptada";
+const INTENSIDAD_MIN = 0;
+const INTENSIDAD_MAX = 10;
 
 const descripcionesIntensidad = [
   "No se siente intensa",
@@ -48,41 +22,268 @@ const descripcionesIntensidad = [
   "Se siente al máximo",
 ];
 
-function actualizarIntensidad() {
-  const valor = Math.round(Number(slider.value));
-  if (valorIntensidad.textContent === String(valor)) {
-    return;
+/* ---------------------------------------------------------------
+   Referencias del DOM
+--------------------------------------------------------------- */
+const botonMenu = document.getElementById("btn-menu");
+const barraNavegacion = document.querySelector(".navbar");
+const menuNavegacion = document.getElementById("menu-navegacion");
+const botonActualizar = document.getElementById("btn-actualizar-registros");
+const panelActualizar = document.getElementById("actualizar-registros");
+const overlayModal = document.getElementById("modal-overlay-bg");
+const botonCerrarActualizar = document.getElementById("btn-cerrar-actualizar");
+const archivoRegistros = document.getElementById("archivo-registros");
+const campoPegar = document.getElementById("registro-para-pegar");
+const botonImportar = document.getElementById("btn-importar-registro");
+
+const botonDescargas = document.getElementById("btn-descargas");
+const dropdownDescargas = document.getElementById("dropdown-descargas");
+const botonDescargarTexto = document.getElementById("btn-descargar-texto");
+const botonDescargarPdf = document.getElementById("btn-descargar-pdf");
+
+const campoFecha = document.getElementById("fecha");
+const selectEmocion = document.getElementById("emocion-select");
+const slider = document.getElementById("intensidad");
+const valorIntensidad = document.getElementById("valor-intensidad");
+const descripcionIntensidad = document.getElementById("descripcion-intensidad");
+const campoObservacion = document.getElementById("observacion");
+
+const botonResumen = document.getElementById("btn-resumen");
+const contenidoResumen = document.getElementById("contenido-resumen");
+
+const botonBuscarHistorial = document.getElementById("btn-buscar-historial");
+const busquedaHistorial = document.getElementById("busqueda-historial");
+const campoBusquedaHistorial = document.getElementById(
+  "campo-busqueda-historial",
+);
+const listaHistorial = document.getElementById("lista-historial");
+
+/* ---------------------------------------------------------------
+   Almacenamiento: lectura/escritura tolerante a fallos
+   localStorage puede estar bloqueado (modo privado, cookies
+   deshabilitadas) o contener datos corruptos. Sin estas guardas un
+   solo valor inválido rompía toda la página al cargar.
+--------------------------------------------------------------- */
+function normalizarIntensidad(valor) {
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) {
+    return null;
   }
+
+  // Respaldos antiguos podían venir en escala 0-100.
+  const enEscala = numero > INTENSIDAD_MAX ? numero / 10 : numero;
+  const redondeado = Math.round(enEscala);
+
+  if (redondeado < INTENSIDAD_MIN || redondeado > INTENSIDAD_MAX) {
+    return null;
+  }
+  return redondeado;
+}
+
+function normalizarRegistro(registro) {
+  if (!registro || typeof registro !== "object") {
+    return null;
+  }
+
+  const intensidad = normalizarIntensidad(registro.intensidad);
+  if (
+    intensidad === null ||
+    typeof registro.fecha !== "string" ||
+    typeof registro.emocion !== "string" ||
+    !registro.fecha.trim() ||
+    !registro.emocion.trim()
+  ) {
+    return null;
+  }
+
+  return {
+    fecha: registro.fecha.trim(),
+    emocion: registro.emocion.trim(),
+    intensidad,
+    observacion:
+      typeof registro.observacion === "string" ? registro.observacion : "",
+  };
+}
+
+function leerRegistros() {
+  let crudo = null;
+
+  try {
+    crudo = localStorage.getItem(CLAVE_REGISTROS);
+  } catch (error) {
+    return [];
+  }
+
+  if (!crudo) {
+    return [];
+  }
+
+  try {
+    const datos = JSON.parse(crudo);
+    if (!Array.isArray(datos)) {
+      return [];
+    }
+    return datos.map(normalizarRegistro).filter(Boolean);
+  } catch (error) {
+    return [];
+  }
+}
+
+function guardarRegistros(registros) {
+  try {
+    localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
+    return true;
+  } catch (error) {
+    mostrarAviso(
+      "No se pudieron guardar los registros en este navegador.",
+      "error",
+    );
+    return false;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Avisos
+--------------------------------------------------------------- */
+function mostrarAviso(mensaje, tipo) {
+  const aviso = document.getElementById("aviso-pagina");
+  aviso.textContent = mensaje;
+  aviso.className = `aviso-pagina aviso-${tipo}`;
+
+  clearTimeout(mostrarAviso.temporizador);
+  mostrarAviso.temporizador = setTimeout(() => {
+    aviso.className = "aviso-pagina";
+    aviso.textContent = "";
+  }, 4000);
+}
+
+/* ---------------------------------------------------------------
+   Navegación
+--------------------------------------------------------------- */
+function abrirMenuMovil(abierto) {
+  barraNavegacion.classList.toggle("menu-abierto", abierto);
+  botonMenu.setAttribute("aria-expanded", String(abierto));
+  botonMenu.setAttribute("aria-label", abierto ? "Cerrar menú" : "Abrir menú");
+}
+
+botonMenu.addEventListener("click", () => {
+  abrirMenuMovil(!barraNavegacion.classList.contains("menu-abierto"));
+});
+
+// Al tocar un enlace del menú en móvil, el panel debe cerrarse solo.
+menuNavegacion.querySelectorAll('a[href^="#"]').forEach((enlace) => {
+  enlace.addEventListener("click", () => abrirMenuMovil(false));
+});
+
+function mostrarDropdownDescargas(abierto) {
+  dropdownDescargas.classList.toggle("mostrar-menu", abierto);
+  botonDescargas.setAttribute("aria-expanded", String(abierto));
+}
+
+botonDescargas.addEventListener("click", () => {
+  mostrarDropdownDescargas(
+    !dropdownDescargas.classList.contains("mostrar-menu"),
+  );
+});
+
+function mostrarResumen(abierto) {
+  contenidoResumen.classList.toggle("mostrar-resumen", abierto);
+  botonResumen.setAttribute("aria-expanded", String(abierto));
+}
+
+botonResumen.addEventListener("click", () => {
+  mostrarResumen(!contenidoResumen.classList.contains("mostrar-resumen"));
+});
+
+// Un único listener delegado en lugar de pisar window.onclick.
+document.addEventListener("click", (evento) => {
+  const destino =
+    evento.target instanceof Element ? evento.target : null;
+
+  if (!destino || !destino.closest("#menu-descargas")) {
+    mostrarDropdownDescargas(false);
+  }
+
+  if (!destino || !destino.closest(".iniciocontenedor")) {
+    mostrarResumen(false);
+  }
+});
+
+/* ---------------------------------------------------------------
+   Formulario de registro
+--------------------------------------------------------------- */
+function refrescarFecha() {
+  const hoy = new Date();
+  const anio = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+  campoFecha.value = `${anio}-${mes}-${dia}`;
+}
+
+// Si la pestaña queda abierta de un día para el otro, la fecha se
+// actualiza al volver en lugar de guardar la de ayer.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    refrescarFecha();
+  }
+});
+
+function actualizarIntensidad() {
+  const valor = normalizarIntensidad(slider.value) ?? 5;
   valorIntensidad.textContent = valor;
   descripcionIntensidad.textContent = descripcionesIntensidad[valor];
 }
 
-let actualizacionPendiente = false;
+slider.addEventListener("input", actualizarIntensidad);
 
-slider.addEventListener("input", () => {
-  if (actualizacionPendiente) {
+document.getElementById("form-emocion").addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const emocion = selectEmocion.value;
+  if (!emocion) {
+    mostrarAviso("Por favor elegí una emoción antes de guardar.", "error");
+    selectEmocion.focus();
     return;
   }
 
-  actualizacionPendiente = true;
-  requestAnimationFrame(() => {
-    actualizarIntensidad();
-    actualizacionPendiente = false;
-  });
+  // El input guarda AAAA-MM-DD; el historial muestra DD/MM/AAAA.
+  const [anio, mes, dia] = campoFecha.value.split("-");
+  if (!anio || !mes || !dia) {
+    mostrarAviso("La fecha del registro no es válida.", "error");
+    return;
+  }
+
+  const nuevoRegistro = {
+    fecha: `${dia}/${mes}/${anio}`,
+    emocion,
+    intensidad: normalizarIntensidad(slider.value) ?? 5,
+    observacion: campoObservacion.value.trim(),
+  };
+
+  const registros = leerRegistros();
+  registros.unshift(nuevoRegistro);
+
+  if (!guardarRegistros(registros)) {
+    return;
+  }
+
+  campoObservacion.value = "";
+  selectEmocion.selectedIndex = 0;
+  slider.value = 5;
+  actualizarIntensidad();
+  actualizarInterfaz();
+  mostrarAviso("Registro guardado correctamente.", "exito");
 });
 
-// 2. Capturar la emoción desde el menú desplegable (Select)
-const selectEmocion = document.getElementById("emocion-select");
-selectEmocion.addEventListener("change", () => {
-  emocionSeleccionada = selectEmocion.value;
-});
-
+/* ---------------------------------------------------------------
+   Búsqueda en el historial
+--------------------------------------------------------------- */
 botonBuscarHistorial.addEventListener("click", () => {
-  const estaAbierta = !busquedaHistorial.hidden;
-  busquedaHistorial.hidden = estaAbierta;
-  botonBuscarHistorial.setAttribute("aria-expanded", !estaAbierta);
+  const estabaAbierta = !busquedaHistorial.hidden;
+  busquedaHistorial.hidden = estabaAbierta;
+  botonBuscarHistorial.setAttribute("aria-expanded", String(!estabaAbierta));
 
-  if (estaAbierta) {
+  if (estabaAbierta) {
     campoBusquedaHistorial.value = "";
     actualizarInterfaz();
   } else {
@@ -92,163 +293,333 @@ botonBuscarHistorial.addEventListener("click", () => {
 
 campoBusquedaHistorial.addEventListener("input", actualizarInterfaz);
 
-document.querySelector(".descargar").addEventListener("click", (e) => {
-  e.preventDefault();
-  const registros =
-    JSON.parse(localStorage.getItem("registros_emocionales")) || [];
+/* ---------------------------------------------------------------
+   Estadísticas (una sola fuente de verdad para pantalla y PDF)
+--------------------------------------------------------------- */
+function calcularEstadisticas(registros) {
+  const total = registros.length;
 
+  if (total === 0) {
+    return { total: 0, promedio: 0, frecuencias: [], masFrecuente: "-" };
+  }
+
+  const suma = registros.reduce(
+    (acumulado, registro) => acumulado + registro.intensidad,
+    0,
+  );
+
+  const conteos = new Map();
+  registros.forEach((registro) => {
+    conteos.set(registro.emocion, (conteos.get(registro.emocion) || 0) + 1);
+  });
+
+  // Se derivan de los datos reales: así también aparecen las emociones
+  // que vengan de un respaldo importado o de una versión anterior.
+  const frecuencias = [...conteos.entries()]
+    .map(([emocion, cantidad]) => ({
+      emocion,
+      cantidad,
+      porcentaje: Math.round((cantidad / total) * 100),
+    }))
+    .sort(
+      (a, b) =>
+        b.cantidad - a.cantidad || a.emocion.localeCompare(b.emocion, "es"),
+    );
+
+  return {
+    total,
+    promedio: Math.round(suma / total),
+    frecuencias,
+    masFrecuente: frecuencias[0].emocion,
+  };
+}
+
+/* ---------------------------------------------------------------
+   Render
+--------------------------------------------------------------- */
+function actualizarInterfaz() {
+  const registros = leerRegistros();
+
+  // 1. Resumen
+  if (registros.length > 0) {
+    const ultimo = registros[0];
+    document.getElementById("resumen-fecha").textContent = ultimo.fecha;
+    document.getElementById("resumen-intensidad").textContent =
+      `${ultimo.intensidad}/10 - ${descripcionesIntensidad[ultimo.intensidad]}`;
+    document.getElementById("resumen-emocion").textContent = ultimo.emocion;
+  } else {
+    document.getElementById("resumen-fecha").innerHTML = "<i>Sin registros</i>";
+    document.getElementById("resumen-intensidad").innerHTML =
+      "<i>Sin registros</i>";
+    document.getElementById("resumen-emocion").innerHTML =
+      "<i>Sin registros</i>";
+  }
+
+  // 2. Historial
+  listaHistorial.innerHTML = "";
+  const textoBusqueda = campoBusquedaHistorial.value.trim().toLowerCase();
+  const registrosFiltrados = textoBusqueda
+    ? registros.filter((registro) =>
+        [
+          registro.fecha,
+          registro.emocion,
+          registro.intensidad,
+          descripcionesIntensidad[registro.intensidad],
+          registro.observacion,
+        ].some((valor) =>
+          String(valor ?? "")
+            .toLowerCase()
+            .includes(textoBusqueda),
+        ),
+      )
+    : registros;
+
+  if (registros.length === 0) {
+    listaHistorial.appendChild(
+      crearMensajeVacio(
+        "Todavía no hay registros. Tu primer registro aparecerá aquí.",
+      ),
+    );
+  } else if (registrosFiltrados.length === 0) {
+    listaHistorial.appendChild(
+      crearMensajeVacio("No se encontraron registros con esa búsqueda."),
+    );
+  }
+
+  registrosFiltrados.forEach((registro) => {
+    listaHistorial.appendChild(crearTarjetaRegistro(registro));
+  });
+
+  // 3. Estadísticas
+  const { total, promedio, frecuencias, masFrecuente } =
+    calcularEstadisticas(registros);
+
+  document.getElementById("stat-cantidad").textContent = total;
+  document.getElementById("stat-frecuente").textContent = masFrecuente;
+  document.getElementById("stat-promedio").textContent =
+    total === 0
+      ? "0/10"
+      : `${promedio}/10 - ${descripcionesIntensidad[promedio]}`;
+
+  const listaFrecuencias = document.getElementById("stat-frecuencias");
+  listaFrecuencias.innerHTML = "";
+  frecuencias.forEach(({ emocion, porcentaje }) => {
+    const elemento = document.createElement("li");
+    elemento.textContent = `${emocion}: ${porcentaje}%`;
+    listaFrecuencias.appendChild(elemento);
+  });
+}
+
+function crearMensajeVacio(texto) {
+  const vacio = document.createElement("p");
+  vacio.className = "historial-vacio";
+  vacio.textContent = texto;
+  return vacio;
+}
+
+function crearTarjetaRegistro(registro) {
+  const articulo = document.createElement("article");
+  articulo.className = "tarjeta-emocion";
+
+  const cabecera = document.createElement("div");
+  cabecera.className = "tarjeta-cabecera";
+  const emocion = document.createElement("strong");
+  emocion.textContent = registro.emocion;
+  const fecha = document.createElement("time");
+  fecha.textContent = registro.fecha;
+  cabecera.append(emocion, fecha);
+
+  const intensidad = document.createElement("p");
+  intensidad.className = "tarjeta-intensidad";
+  intensidad.textContent = `Intensidad: ${registro.intensidad}/10 - ${descripcionesIntensidad[registro.intensidad]}`;
+
+  const observacion = document.createElement("p");
+  observacion.className = "tarjeta-observacion";
+  observacion.textContent = registro.observacion || "Sin observación";
+
+  articulo.append(cabecera, intensidad, observacion);
+  return articulo;
+}
+
+/* ---------------------------------------------------------------
+   Descargas
+--------------------------------------------------------------- */
+function descargarArchivo(nombre, contenido, tipo) {
+  const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombre;
+  enlace.style.display = "none";
+
+  // Firefox exige que el enlace esté en el documento, y revocar la URL
+  // de inmediato puede cancelar la descarga: se libera después.
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+botonDescargarTexto.addEventListener("click", () => {
+  mostrarDropdownDescargas(false);
+  abrirMenuMovil(false);
+
+  const registros = leerRegistros();
   if (registros.length === 0) {
     mostrarAviso("No hay registros para descargar todavía.", "error");
     return;
   }
 
-  const archivo = new Blob([JSON.stringify(registros, null, 2)], {
-    type: "text/plain;charset=utf-8",
-  });
-  const enlace = document.createElement("a");
-  enlace.href = URL.createObjectURL(archivo);
-  enlace.download = "registros-emocionales.txt";
-  enlace.click();
-  URL.revokeObjectURL(enlace.href);
+  descargarArchivo(
+    "registros-emocionales.txt",
+    JSON.stringify(registros, null, 2),
+    "text/plain;charset=utf-8",
+  );
   mostrarAviso("Registros descargados correctamente.", "exito");
 });
 
-document
-  .querySelector(".descragadocumento")
-  .addEventListener("click", async (e) => {
-    e.preventDefault();
-    const registros =
-      JSON.parse(localStorage.getItem("registros_emocionales")) || [];
+botonDescargarPdf.addEventListener("click", async () => {
+  mostrarDropdownDescargas(false);
+  abrirMenuMovil(false);
 
-    if (registros.length === 0) {
-      mostrarAviso("No hay registros para crear el PDF todavía.", "error");
-      return;
+  const registros = leerRegistros();
+  if (registros.length === 0) {
+    mostrarAviso("No hay registros para crear el PDF todavía.", "error");
+    return;
+  }
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    mostrarAviso(
+      "No se pudo cargar el generador de PDF. Revisá tu conexión.",
+      "error",
+    );
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const documento = new jsPDF();
+  const anchoPagina = documento.internal.pageSize.getWidth();
+  const margen = 20;
+  const anchoUtil = anchoPagina - margen * 2;
+  const limiteInferior = 278;
+  let posicionY = 20;
+
+  const asegurarEspacio = (altoNecesario) => {
+    if (posicionY + altoNecesario > limiteInferior) {
+      documento.addPage();
+      posicionY = 20;
     }
+  };
 
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      mostrarAviso(
-        "No se pudo cargar el generador de PDF. Revisá tu conexión.",
-        "error",
-      );
-      return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const documento = new jsPDF();
-    const anchoPagina = documento.internal.pageSize.getWidth();
-    const margen = 20;
-    let posicionY = 20;
-
-    const asegurarEspacio = (altoNecesario) => {
-      if (posicionY + altoNecesario > 278) {
-        documento.addPage();
-        posicionY = 20;
-      }
+  // Se mide el párrafo antes de dibujarlo para poder reservar el alto
+  // exacto de cada tarjeta y no partirla entre dos páginas.
+  const prepararParrafo = (texto, opciones = {}) => {
+    const tamano = opciones.tamano || 10;
+    const interlineado = opciones.interlineado || 5;
+    documento.setFontSize(tamano);
+    documento.setFont("helvetica", opciones.negrita ? "bold" : "normal");
+    const lineas = documento.splitTextToSize(limpiarTextoPDF(texto), anchoUtil);
+    return {
+      lineas,
+      tamano,
+      negrita: Boolean(opciones.negrita),
+      alto: lineas.length * interlineado + 4,
     };
+  };
 
-    const agregarParrafo = (texto, opciones = {}) => {
-      const tamano = opciones.tamano || 10;
-      const interlineado = opciones.interlineado || 5;
-      const lineas = documento.splitTextToSize(
-        limpiarTextoPDF(texto),
-        anchoPagina - margen * 2,
-      );
-      asegurarEspacio(lineas.length * interlineado + 4);
-      documento.setFontSize(tamano);
-      documento.setFont("helvetica", opciones.negrita ? "bold" : "normal");
-      documento.text(lineas, margen, posicionY);
-      posicionY += lineas.length * interlineado + 4;
-    };
+  const dibujarParrafo = (parrafo) => {
+    documento.setFontSize(parrafo.tamano);
+    documento.setFont("helvetica", parrafo.negrita ? "bold" : "normal");
+    documento.text(parrafo.lineas, margen, posicionY);
+    posicionY += parrafo.alto;
+  };
 
-    const logo = await cargarImagenParaPDF("img/icono-circular.png");
-    if (logo) {
-      documento.addImage(logo, "PNG", margen, posicionY, 22, 22);
-    }
-    documento.setFont("helvetica", "bold");
-    documento.setFontSize(18);
-    documento.text("Registro Emocional", margen + 28, posicionY + 9);
-    documento.setFont("helvetica", "normal");
-    documento.setFontSize(10);
-    documento.text(
-      "TECNO-LAB | Proyecto Nosotros",
-      margen + 28,
-      posicionY + 16,
-    );
-    posicionY += 34;
-    documento.setDrawColor(0, 123, 255);
-    documento.line(margen, posicionY, anchoPagina - margen, posicionY);
-    posicionY += 12;
+  const agregarParrafo = (texto, opciones) => {
+    const parrafo = prepararParrafo(texto, opciones);
+    asegurarEspacio(parrafo.alto);
+    dibujarParrafo(parrafo);
+  };
 
+  const logo = await cargarImagenParaPDF("img/icono-circular.png");
+  if (logo) {
+    documento.addImage(logo, "PNG", margen, posicionY, 22, 22);
+  }
+  documento.setFont("helvetica", "bold");
+  documento.setFontSize(18);
+  documento.text("Registro Emocional", margen + 28, posicionY + 9);
+  documento.setFont("helvetica", "normal");
+  documento.setFontSize(10);
+  documento.text("TECNO-LAB | Proyecto Nosotros", margen + 28, posicionY + 16);
+  posicionY += 34;
+  documento.setDrawColor(0, 123, 255);
+  documento.line(margen, posicionY, anchoPagina - margen, posicionY);
+  posicionY += 12;
+
+  agregarParrafo(
+    `Documento generado el ${new Date().toLocaleDateString("es-AR")}`,
+    { tamano: 9 },
+  );
+  agregarParrafo("Resumen de registros", { tamano: 14, negrita: true });
+
+  const { total, promedio, frecuencias, masFrecuente } =
+    calcularEstadisticas(registros);
+
+  agregarParrafo(`Cantidad de registros: ${total}`);
+  agregarParrafo(
+    `Intensidad promedio: ${promedio}/10 - ${descripcionesIntensidad[promedio]}`,
+  );
+  agregarParrafo(`Emoción más frecuente: ${masFrecuente}`);
+  agregarParrafo("Frecuencia por emoción", { negrita: true });
+  frecuencias.forEach(({ emocion, cantidad, porcentaje }) => {
     agregarParrafo(
-      `Documento generado el ${new Date().toLocaleDateString("es-AR")}`,
-      { tamano: 9 },
+      `${emocion}: ${porcentaje}% (${cantidad} registro${cantidad === 1 ? "" : "s"})`,
     );
-    agregarParrafo("Resumen de registros", { tamano: 14, negrita: true });
-
-    const sumaIntensidad = registros.reduce(
-      (total, registro) => total + Number(registro.intensidad),
-      0,
-    );
-    const promedio = Math.round(sumaIntensidad / registros.length);
-    const frecuencias = {};
-    registros.forEach((registro) => {
-      frecuencias[registro.emocion] = (frecuencias[registro.emocion] || 0) + 1;
-    });
-    const emocionFrecuente = Object.entries(frecuencias).sort(
-      (a, b) => b[1] - a[1],
-    )[0][0];
-
-    agregarParrafo(`Cantidad de registros: ${registros.length}`);
-    agregarParrafo(
-      `Intensidad promedio: ${promedio}/10 - ${descripcionesIntensidad[promedio]}`,
-    );
-    agregarParrafo(`Emoción más frecuente: ${emocionFrecuente}`);
-    agregarParrafo("Frecuencia por emoción", { negrita: true });
-    Object.entries(frecuencias).forEach(([emocion, cantidad]) => {
-      agregarParrafo(
-        `${emocion}: ${Math.round((cantidad / registros.length) * 100)}% (${cantidad} registro${cantidad === 1 ? "" : "s"})`,
-      );
-    });
-    agregarParrafo("Detalle de registros", { tamano: 14, negrita: true });
-
-    registros.forEach((registro, indice) => {
-      asegurarEspacio(38);
-      documento.setFillColor(248, 250, 252);
-      documento.roundedRect(
-        margen,
-        posicionY - 4,
-        anchoPagina - margen * 2,
-        30,
-        2,
-        2,
-        "F",
-      );
-      agregarParrafo(`${indice + 1}. ${registro.emocion} | ${registro.fecha}`, {
-        negrita: true,
-      });
-      agregarParrafo(
-        `Intensidad: ${registro.intensidad}/10 - ${descripcionesIntensidad[registro.intensidad]}`,
-      );
-      agregarParrafo(
-        `Observación: ${registro.observacion || "Sin observación"}`,
-      );
-      posicionY += 2;
-    });
-
-    agregarParrafo("Avisos y privacidad", { tamano: 14, negrita: true });
-    agregarParrafo(
-      "Este proyecto guarda los registros de forma local en este navegador. El archivo se genera como práctica educativa para poder compartirlo con un profesional o recuperarlo mediante “Actualizar Registros”.",
-    );
-    agregarParrafo(
-      "IMPORTANTE: Este proyecto no reemplaza el acompañamiento de una persona adulta o profesional. Tus registros son privados.",
-    );
-    agregarParrafo("Registro Emocional Web | TECNO-LAB | Proyecto Nosotros", {
-      tamano: 9,
-    });
-
-    documento.save("registro-emocional-completo.pdf");
-    mostrarAviso("Documento PDF descargado correctamente.", "exito");
   });
+  agregarParrafo("Detalle de registros", { tamano: 14, negrita: true });
+
+  registros.forEach((registro, indice) => {
+    const partes = [
+      prepararParrafo(`${indice + 1}. ${registro.emocion} | ${registro.fecha}`, {
+        negrita: true,
+      }),
+      prepararParrafo(
+        `Intensidad: ${registro.intensidad}/10 - ${descripcionesIntensidad[registro.intensidad]}`,
+      ),
+      prepararParrafo(
+        `Observación: ${registro.observacion || "Sin observación"}`,
+      ),
+    ];
+
+    const altoTarjeta = partes.reduce((suma, parte) => suma + parte.alto, 0) + 6;
+    asegurarEspacio(altoTarjeta + 4);
+
+    documento.setFillColor(248, 250, 252);
+    documento.roundedRect(
+      margen - 4,
+      posicionY - 6,
+      anchoUtil + 8,
+      altoTarjeta,
+      2,
+      2,
+      "F",
+    );
+    partes.forEach(dibujarParrafo);
+    posicionY += 6;
+  });
+
+  agregarParrafo("Avisos y privacidad", { tamano: 14, negrita: true });
+  agregarParrafo(
+    "Este proyecto guarda los registros de forma local en este navegador. El archivo se genera como práctica educativa para poder compartirlo con un profesional o recuperarlo mediante “Actualizar Registros”.",
+  );
+  agregarParrafo(
+    "IMPORTANTE: Este proyecto no reemplaza el acompañamiento de una persona adulta o profesional. Tus registros son privados.",
+  );
+  agregarParrafo("Registro Emocional Web | TECNO-LAB | Proyecto Nosotros", {
+    tamano: 9,
+  });
+
+  documento.save("registro-emocional-completo.pdf");
+  mostrarAviso("Documento PDF descargado correctamente.", "exito");
+});
 
 function limpiarTextoPDF(texto) {
   return String(texto)
@@ -275,6 +646,50 @@ function cargarImagenParaPDF(ruta) {
   });
 }
 
+/* ---------------------------------------------------------------
+   Modal "Actualizar registros"
+--------------------------------------------------------------- */
+function abrirModalActualizar() {
+  panelActualizar.classList.add("modal-visible");
+  panelActualizar.setAttribute("aria-hidden", "false");
+  overlayModal.hidden = false;
+  botonActualizar.setAttribute("aria-expanded", "true");
+
+  // focus() sobre un elemento que el navegador todavía tiene calculado
+  // como invisible no hace nada: sin este reflujo forzado el teclado
+  // nunca entra al diálogo.
+  void panelActualizar.offsetHeight;
+  botonCerrarActualizar.focus();
+
+  if (document.activeElement !== botonCerrarActualizar) {
+    requestAnimationFrame(() => botonCerrarActualizar.focus());
+  }
+}
+
+// Con aria-modal="true" el foco no debe poder salir del diálogo.
+function atraparFoco(e) {
+  const focuseables = panelActualizar.querySelectorAll(
+    'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])',
+  );
+  if (focuseables.length === 0) {
+    return;
+  }
+
+  const primero = focuseables[0];
+  const ultimo = focuseables[focuseables.length - 1];
+
+  if (e.shiftKey && document.activeElement === primero) {
+    e.preventDefault();
+    ultimo.focus();
+  } else if (!e.shiftKey && document.activeElement === ultimo) {
+    e.preventDefault();
+    primero.focus();
+  } else if (!panelActualizar.contains(document.activeElement)) {
+    e.preventDefault();
+    primero.focus();
+  }
+}
+
 function cerrarModalActualizar() {
   panelActualizar.classList.remove("modal-visible");
   panelActualizar.setAttribute("aria-hidden", "true");
@@ -283,25 +698,34 @@ function cerrarModalActualizar() {
   botonActualizar.focus();
 }
 
-botonActualizar.addEventListener("click", (e) => {
-  e.preventDefault();
-  panelActualizar.classList.add("modal-visible");
-  panelActualizar.setAttribute("aria-hidden", "false");
-  overlayModal.hidden = false;
-  botonActualizar.setAttribute("aria-expanded", "true");
-  botonCerrarActualizar.focus();
+botonActualizar.addEventListener("click", () => {
+  abrirMenuMovil(false);
+  abrirModalActualizar();
 });
 
 botonCerrarActualizar.addEventListener("click", cerrarModalActualizar);
 overlayModal.addEventListener("click", cerrarModalActualizar);
 
 document.addEventListener("keydown", (e) => {
-  if (
-    e.key === "Escape" &&
-    panelActualizar.classList.contains("modal-visible")
-  ) {
-    cerrarModalActualizar();
+  const modalAbierto = panelActualizar.classList.contains("modal-visible");
+
+  if (e.key === "Tab" && modalAbierto) {
+    atraparFoco(e);
+    return;
   }
+
+  if (e.key !== "Escape") {
+    return;
+  }
+
+  if (modalAbierto) {
+    cerrarModalActualizar();
+    return;
+  }
+
+  mostrarDropdownDescargas(false);
+  mostrarResumen(false);
+  abrirMenuMovil(false);
 });
 
 archivoRegistros.addEventListener("change", () => {
@@ -312,7 +736,7 @@ archivoRegistros.addEventListener("change", () => {
 
   const lector = new FileReader();
   lector.addEventListener("load", (e) => {
-    document.getElementById("registro-para-pegar").value = e.target.result;
+    campoPegar.value = e.target.result;
   });
   lector.addEventListener("error", () => {
     mostrarAviso("No se pudo leer el archivo seleccionado.", "error");
@@ -320,324 +744,95 @@ archivoRegistros.addEventListener("change", () => {
   lector.readAsText(archivo);
 });
 
-document
-  .getElementById("btn-importar-registro")
-  .addEventListener("click", () => {
-    const campo = document.getElementById("registro-para-pegar");
-    const contenido = campo.value
-      .replace(/^\uFEFF/, "")
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim();
-    let registros;
+botonImportar.addEventListener("click", () => {
+  const contenido = campoPegar.value
+    .replace(/^﻿/, "")
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 
-    try {
-      registros = JSON.parse(contenido);
-    } catch (error) {
-      mostrarAviso("El registro pegado no tiene un formato válido.", "error");
-      return;
-    }
-
-    if (
-      !Array.isArray(registros) ||
-      registros.some((registro) => {
-        if (
-          !registro ||
-          typeof registro.fecha !== "string" ||
-          typeof registro.emocion !== "string"
-        ) {
-          return true;
-        }
-
-        const intensidad = Number(registro.intensidad);
-        return (
-          !Number.isInteger(intensidad) || intensidad < 0 || intensidad > 100
-        );
-      })
-    ) {
-      mostrarAviso("El registro pegado no tiene datos válidos.", "error");
-      return;
-    }
-
-    const registrosValidados = registros.map((registro) => {
-      const intensidadOriginal = Number(registro.intensidad);
-      const intensidad =
-        intensidadOriginal > 10
-          ? Math.round(intensidadOriginal / 10)
-          : intensidadOriginal;
-
-      return {
-        fecha: registro.fecha,
-        emocion: registro.emocion,
-        intensidad,
-        observacion:
-          typeof registro.observacion === "string" ? registro.observacion : "",
-      };
-    });
-
-    localStorage.setItem(
-      "registros_emocionales",
-      JSON.stringify(registrosValidados),
-    );
-    campo.value = "";
-    actualizarInterfaz();
-    mostrarAviso("Registros actualizados correctamente.", "exito");
-  });
-
-// Guardar el registro al enviar el formulario
-document.getElementById("form-emocion").addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  if (!emocionSeleccionada) {
-    mostrarAviso("Por favor elegí una emoción antes de guardar.", "error");
+  if (!contenido) {
+    mostrarAviso("Pegá o importá el contenido del respaldo.", "error");
     return;
   }
 
-  // Convertimos la fecha del input (AAAA-MM-DD) a DD/MM/AAAA para el historial
-  const fechaInput = document.getElementById("fecha").value;
-  const [y, m, d] = fechaInput.split("-");
-  const fechaFormateada = `${d}/${m}/${y}`;
+  let datos;
+  try {
+    datos = JSON.parse(contenido);
+  } catch (error) {
+    mostrarAviso("El registro pegado no tiene un formato válido.", "error");
+    return;
+  }
 
-  const nuevoRegistro = {
-    fecha: fechaFormateada,
-    emocion: emocionSeleccionada,
-    intensidad: Math.round(Number(slider.value)),
-    observacion: document.getElementById("observacion").value,
-  };
+  if (!Array.isArray(datos)) {
+    mostrarAviso("El registro pegado no tiene datos válidos.", "error");
+    return;
+  }
 
-  const registros =
-    JSON.parse(localStorage.getItem("registros_emocionales")) || [];
-  registros.unshift(nuevoRegistro);
-  localStorage.setItem("registros_emocionales", JSON.stringify(registros));
+  const registrosValidados = datos.map(normalizarRegistro);
+  if (registrosValidados.some((registro) => registro === null)) {
+    mostrarAviso("El registro pegado no tiene datos válidos.", "error");
+    return;
+  }
 
-  // Limpiar formulario y actualizar vista
-  document.getElementById("observacion").value = "";
-  selectEmocion.selectedIndex = 0; // Reinicia el menú desplegable
-  emocionSeleccionada = "";
-  slider.value = 5; // Reinicia el medidor a la mitad
-  actualizarIntensidad();
+  // Importar una lista vacía borraría todo el historial sin avisar.
+  if (registrosValidados.length === 0) {
+    mostrarAviso("El respaldo no contiene registros para importar.", "error");
+    return;
+  }
+
+  if (!guardarRegistros(registrosValidados)) {
+    return;
+  }
+
+  campoPegar.value = "";
+  // Se limpia para poder volver a elegir el mismo archivo.
+  archivoRegistros.value = "";
   actualizarInterfaz();
-  mostrarAviso("Registro guardado correctamente.", "exito");
-});
-
-function mostrarAviso(mensaje, tipo) {
-  const aviso = document.getElementById("aviso-pagina");
-  aviso.textContent = mensaje;
-  aviso.className = `aviso-pagina aviso-${tipo}`;
-
-  clearTimeout(mostrarAviso.temporizador);
-  mostrarAviso.temporizador = setTimeout(() => {
-    aviso.className = "aviso-pagina";
-    aviso.textContent = "";
-  }, 4000);
-}
-
-// Actualizar la interfaz con los datos de localStorage
-function actualizarInterfaz() {
-  const registros =
-    JSON.parse(localStorage.getItem("registros_emocionales")) || [];
-
-  // 1. Actualizar Resumen (Inicio)
-  if (registros.length > 0) {
-    const ultimo = registros[0];
-    document.getElementById("resumen-fecha").textContent = ultimo.fecha;
-    document.getElementById("resumen-intensidad").textContent =
-      `${ultimo.intensidad}/10 - ${descripcionesIntensidad[ultimo.intensidad]}`;
-    document.getElementById("resumen-emocion").textContent = ultimo.emocion;
-  } else {
-    document.getElementById("resumen-fecha").innerHTML = "<i>Sin registros</i>";
-    document.getElementById("resumen-intensidad").innerHTML =
-      "<i>Sin registros</i>";
-    document.getElementById("resumen-emocion").innerHTML =
-      "<i>Sin registros</i>";
-  }
-
-  // 2. Actualizar Historial
-  const listaHistorial = document.getElementById("lista-historial");
-  listaHistorial.innerHTML = "";
-  const textoBusqueda = campoBusquedaHistorial.value.trim().toLowerCase();
-  const registrosFiltrados = textoBusqueda
-    ? registros.filter((registro) =>
-        [
-          registro.fecha,
-          registro.emocion,
-          registro.intensidad,
-          descripcionesIntensidad[registro.intensidad],
-          registro.observacion,
-        ].some((valor) =>
-          String(valor || "")
-            .toLowerCase()
-            .includes(textoBusqueda),
-        ),
-      )
-    : registros;
-
-  if (registros.length === 0) {
-    const vacio = document.createElement("p");
-    vacio.className = "historial-vacio";
-    vacio.textContent =
-      "Todavía no hay registros. Tu primer registro aparecerá aquí.";
-    listaHistorial.appendChild(vacio);
-  } else if (registrosFiltrados.length === 0) {
-    const vacio = document.createElement("p");
-    vacio.className = "historial-vacio";
-    vacio.textContent = "No se encontraron registros con esa búsqueda.";
-    listaHistorial.appendChild(vacio);
-  }
-
-  registrosFiltrados.forEach((r) => {
-    const articulo = document.createElement("article");
-    articulo.className = "tarjeta-emocion";
-
-    const cabecera = document.createElement("div");
-    cabecera.className = "tarjeta-cabecera";
-    const emocion = document.createElement("strong");
-    emocion.textContent = r.emocion;
-    const fecha = document.createElement("time");
-    fecha.textContent = r.fecha;
-    cabecera.append(emocion, fecha);
-
-    const intensidad = document.createElement("p");
-    intensidad.className = "tarjeta-intensidad";
-    intensidad.textContent = `Intensidad: ${r.intensidad}/10 - ${descripcionesIntensidad[r.intensidad]}`;
-
-    const observacion = document.createElement("p");
-    observacion.className = "tarjeta-observacion";
-    observacion.textContent = r.observacion || "Sin observación";
-
-    articulo.append(cabecera, intensidad, observacion);
-    listaHistorial.appendChild(articulo);
-  });
-
-  // 3. Actualizar Estadísticas
-  const total = registros.length;
-  document.getElementById("stat-cantidad").textContent = total;
-
-  if (total === 0) {
-    document.getElementById("stat-promedio").textContent = "0/10";
-    document.getElementById("stat-frecuente").textContent = "-";
-    document.getElementById("stat-frecuencias").innerHTML = "";
-    return;
-  }
-
-  const sumaIntensidad = registros.reduce(
-    (acc, curr) => acc + curr.intensidad,
-    0,
+  mostrarAviso(
+    `Se actualizaron ${registrosValidados.length} registro${
+      registrosValidados.length === 1 ? "" : "s"
+    }.`,
+    "exito",
   );
-  const promedio = Math.round(sumaIntensidad / total);
-  document.getElementById("stat-promedio").textContent =
-    `${promedio}/10 - ${descripcionesIntensidad[promedio]}`;
+});
 
-  const frecuencias = {};
-  registros.forEach((r) => {
-    frecuencias[r.emocion] = (frecuencias[r.emocion] || 0) + 1;
-  });
-
-  let masFrecuente = "-";
-  let maxConteo = 0;
-  const listaFrecuencias = document.getElementById("stat-frecuencias");
-  listaFrecuencias.innerHTML = "";
-
-  // Mapeo completo de las emociones presentes en tu HTML
-  const listaEmocionesPosibles = [
-    "😀 Felicidad",
-    "😌 Calma",
-    "😟 Ansiedad",
-    "😢 Tristeza",
-    "😠 Enojo",
-    "💪 Motivación",
-    "😰 Ansiedad",
-    "😤 Frustración",
-    "😳 Vergüenza",
-    "😥 Culpa",
-    "😡 Orgullo",
-    "🥰 Gratitud",
-    "😍 Amor",
-    "😒 Celos",
-    "🤬 Envidia",
-    "😞 Decepción",
-    "😇 Esperanza",
-  ];
-
-  listaEmocionesPosibles.forEach((e) => {
-    const conteo = frecuencias[e] || 0;
-    if (conteo > 0) {
-      // Solo lista en pantalla las emociones que el usuario ya usó
-      const porcentaje = Math.round((conteo / total) * 100);
-      if (conteo > maxConteo) {
-        maxConteo = conteo;
-        masFrecuente = e;
-      }
-      const li = document.createElement("li");
-      li.textContent = `${e}: ${porcentaje}%`;
-      listaFrecuencias.appendChild(li);
-    }
-  });
-
-  document.getElementById("stat-frecuente").textContent = masFrecuente;
-}
-
-// Cargar datos al iniciar la página
-actualizarInterfaz();
-
-//aviso de privacidad
-document.addEventListener("DOMContentLoaded", function () {
+/* ---------------------------------------------------------------
+   Aviso de privacidad
+--------------------------------------------------------------- */
+function iniciarAvisoPrivacidad() {
   const contenedor = document.getElementById("contenedorBloqueo");
-  const btnEntendido = document.getElementById("btnEntendido");
-  const cuerpoPagina = document.body;
+  const botonEntendido = document.getElementById("btnEntendido");
 
-  // Comprobar si ya aceptó la nota de privacidad anteriormente
-  if (!localStorage.getItem("nota_educativa_aceptada")) {
-    // Si no ha aceptado, quitamos 'oculto' para bloquear la pantalla
-    contenedor.classList.remove("oculto");
-    // Bloqueamos el scroll del body
-    cuerpoPagina.classList.add("sin-scroll");
+  let yaAceptado = false;
+  try {
+    yaAceptado = localStorage.getItem(CLAVE_PRIVACIDAD) === "true";
+  } catch (error) {
+    yaAceptado = false;
   }
 
-  // Al pulsar el botón "Entendido y Continuar"
-  btnEntendido.addEventListener("click", function () {
-    // Guardamos el consentimiento en el navegador
-    localStorage.setItem("nota_educativa_aceptada", "true");
+  if (!yaAceptado) {
+    contenedor.classList.remove("oculto");
+    document.body.classList.add("sin-scroll");
+    botonEntendido.focus();
+  }
 
-    // Ocultamos el bloqueo y restauramos el scroll de la web
+  botonEntendido.addEventListener("click", () => {
+    try {
+      localStorage.setItem(CLAVE_PRIVACIDAD, "true");
+    } catch (error) {
+      // Sin almacenamiento el aviso volverá a aparecer; no es bloqueante.
+    }
+
     contenedor.classList.add("oculto");
-    cuerpoPagina.classList.remove("sin-scroll");
+    document.body.classList.remove("sin-scroll");
   });
-});
-
-// descargar documento PDF
-function toggleMenu(event) {
-  event.preventDefault();
-  const dropdown = document.getElementById("dropdown-descargas");
-  dropdown.classList.toggle("mostrar-menu");
 }
 
-document.getElementById("btn-resumen").addEventListener("click", (event) => {
-  event.stopPropagation();
-  const boton = event.currentTarget;
-  const resumen = document.getElementById("contenido-resumen");
-  const estaAbierto = resumen.classList.toggle("mostrar-resumen");
-  boton.setAttribute("aria-expanded", estaAbierto);
-});
-
-window.onclick = function (event) {
-  if (!event.target.matches("#btn-descargas")) {
-    const dropdowns = document.getElementsByClassName("submenu-contenido");
-    for (let i = 0; i < dropdowns.length; i++) {
-      let openDropdown = dropdowns[i];
-      if (openDropdown.classList.contains("mostrar-menu")) {
-        openDropdown.classList.remove("mostrar-menu");
-      }
-    }
-  }
-
-  const resumen = document.getElementById("contenido-resumen");
-  const botonResumen = document.getElementById("btn-resumen");
-  if (
-    !event.target.closest(".iniciocontenedor") &&
-    resumen.classList.contains("mostrar-resumen")
-  ) {
-    resumen.classList.remove("mostrar-resumen");
-    botonResumen.setAttribute("aria-expanded", "false");
-  }
-};
+/* ---------------------------------------------------------------
+   Arranque
+--------------------------------------------------------------- */
+refrescarFecha();
+actualizarIntensidad();
+actualizarInterfaz();
+iniciarAvisoPrivacidad();

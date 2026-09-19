@@ -50,6 +50,11 @@ button:hover {
   transform: translateY(-1px);
 }
 
+button:focus-visible {
+  outline: 3px solid var(--celeste-fuerte);
+  outline-offset: 2px;
+}
+
 footer {
   width: 100%;
   padding: 20px 0;
@@ -151,6 +156,36 @@ footer {
   color: var(--celeste);
 }
 
+/* Los disparadores del menú son <button> por accesibilidad, pero deben
+   verse igual que los enlaces de la barra. */
+.nav-links .nav-boton {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--blanco);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: left;
+  transition: color 0.3s ease;
+}
+
+.nav-links .nav-boton:hover,
+.nav-links .nav-boton:focus-visible {
+  border-color: transparent;
+  background: none;
+  color: var(--celeste);
+  transform: none;
+}
+
+.nav-links a:focus-visible,
+.nav-links .nav-boton:focus-visible,
+.btn-menu:focus-visible {
+  outline: 2px solid var(--celeste);
+  outline-offset: 3px;
+}
+
 .descargas {
   position: relative;
   display: inline-block;
@@ -165,6 +200,7 @@ footer {
   top: 100%;
   left: 0;
   z-index: 1;
+  width: max-content;
   min-width: 180px;
   margin-top: 5px;
   overflow: hidden;
@@ -177,24 +213,43 @@ footer {
   transition:
     opacity 0.2s ease,
     transform 0.2s ease,
-    visibility 0.2s ease;
+    visibility 0s linear 0.2s;
 }
 
-.submenu-contenido a {
+.submenu-contenido a,
+.submenu-contenido .submenu-item {
   display: block;
+  width: 100%;
   padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
   color: var(--texto);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: left;
   text-decoration: none;
+  white-space: nowrap;
+  transform: none;
 }
 
-.submenu-contenido a:hover {
-  background-color: #dff5ff;
+.submenu-contenido a:hover,
+.submenu-contenido .submenu-item:hover,
+.submenu-contenido .submenu-item:focus-visible {
+  border-color: transparent;
+  outline: none;
+  background: #dff5ff;
+  color: var(--texto);
+  transform: none;
 }
 
 .mostrar-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  transition-delay: 0s;
 }
 
 /* Resumen */
@@ -203,12 +258,6 @@ footer {
   top: 74px;
   z-index: 900;
   display: inline-block;
-}
-
-.iniciocontenedor.resumen-oculto-actualizar {
-  position: fixed;
-  top: 74px;
-  left: 0;
 }
 
 .contenido-inicio {
@@ -230,7 +279,7 @@ footer {
   transition:
     opacity 0.2s ease,
     transform 0.2s ease,
-    visibility 0.2s ease;
+    visibility 0s linear 0.2s;
 }
 
 .contenido-inicio h3 {
@@ -249,6 +298,7 @@ footer {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  transition-delay: 0s;
 }
 
 /* Registro */
@@ -287,10 +337,6 @@ footer {
   background: var(--blanco);
   color: var(--texto);
   font-family: Arial, sans-serif;
-}
-
-.selectemocion {
-  margin-bottom: 10px;
 }
 
 .intensidadmedidor {
@@ -381,7 +427,7 @@ footer {
   transition:
     opacity 0.35s ease,
     transform 0.35s ease,
-    visibility 0.45s ease;
+    visibility 0s linear 0.35s;
 }
 
 .panel-actualizar-registros.modal-visible {
@@ -389,6 +435,7 @@ footer {
   visibility: visible;
   pointer-events: auto;
   transform: translate(-50%, -50%);
+  transition-delay: 0s;
 }
 
 .panel-actualizar-registros h2 {
@@ -438,6 +485,13 @@ footer {
   border-radius: 5px;
   background-color: #f8fafc;
   color: #334155;
+}
+
+.etiqueta-pegar {
+  display: block;
+  margin-bottom: 8px;
+  color: #334155;
+  font-weight: 600;
 }
 
 #registro-para-pegar {
@@ -785,14 +839,6 @@ footer {
     width: 50%;
   }
 
-  #historial.historial-contenedor {
-    max-width: 97%;
-  }
-
-  #estadisticas.estadisticas-contenedor {
-    max-width: 97%;
-  }
-
   .estadisticas-panel {
     grid-template-columns: 1fr 1fr;
   }
@@ -801,5 +847,16 @@ footer {
     flex-direction: row;
     align-items: center;
     gap: 16px;
+  }
+}
+
+/* Accesibilidad: respetar a quien pide menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
