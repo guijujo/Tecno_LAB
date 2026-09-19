@@ -404,8 +404,9 @@ footer {
   font-family: Arial, sans-serif;
 }
 
-/* Modal de actualización */
-.panel-actualizar-registros {
+/* Modales */
+.panel-actualizar-registros,
+.panel-sugerencia {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -430,7 +431,8 @@ footer {
     visibility 0s linear 0.35s;
 }
 
-.panel-actualizar-registros.modal-visible {
+.panel-actualizar-registros.modal-visible,
+.panel-sugerencia.modal-visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -446,7 +448,8 @@ footer {
   margin-bottom: 16px;
 }
 
-.btn-cerrar-actualizar {
+.btn-cerrar-actualizar,
+.btn-cerrar-sugerencia {
   position: absolute;
   top: 10px;
   right: 14px;
@@ -456,16 +459,21 @@ footer {
   height: 32px;
   padding: 0;
   border: 1px solid #cbd5e1;
+  /* El estilo genérico de button aplica un degradado: background-color
+     solo no alcanza para quitarlo. */
   background-color: #f8fafc;
+  background-image: none;
   color: #334155;
   font-size: 18px;
   line-height: 1;
   place-items: center;
 }
 
-.btn-cerrar-actualizar:hover {
+.btn-cerrar-actualizar:hover,
+.btn-cerrar-sugerencia:hover {
   border-color: #64748b;
   background-color: #e2e8f0;
+  background-image: none;
   color: #0f172a;
 }
 
@@ -526,6 +534,94 @@ footer {
 }
 
 .modal-overlay-bg[hidden] {
+  display: none;
+}
+
+/* Aviso en vivo bajo el medidor de intensidad */
+.aviso-intensidad {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--celeste-fuerte);
+  border-radius: 4px;
+  background-color: #f1f9ff;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.aviso-intensidad[hidden] {
+  display: none;
+}
+
+.aviso-intensidad.tono-refuerzo {
+  border-left-color: #34d399;
+  background-color: #f0fdf7;
+}
+
+/* Modal de sugerencia */
+.panel-sugerencia {
+  width: min(92%, 540px);
+  border-top: 5px solid var(--celeste-fuerte);
+}
+
+.panel-sugerencia.tono-refuerzo {
+  border-top-color: #34d399;
+}
+
+.sugerencia-emocion {
+  margin-bottom: 6px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.panel-sugerencia h2 {
+  margin-bottom: 10px;
+  font-size: 1.35rem;
+}
+
+.sugerencia-intro {
+  margin-bottom: 16px;
+  color: var(--texto);
+  line-height: 1.55;
+}
+
+.sugerencia-ideas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.sugerencia-ideas li {
+  padding: 12px 14px;
+  border: 1px solid #d8eefc;
+  border-left: 4px solid var(--celeste-fuerte);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ffffff, #f2fbff);
+  line-height: 1.5;
+}
+
+.panel-sugerencia.tono-refuerzo .sugerencia-ideas li {
+  border-color: #c7f0dd;
+  border-left-color: #34d399;
+  background: linear-gradient(180deg, #ffffff, #f2fdf8);
+}
+
+.sugerencia-ayuda {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid #fcd9a4;
+  border-radius: 6px;
+  background-color: #fffaf0;
+  color: #7c4a03;
+  line-height: 1.55;
+}
+
+.sugerencia-ayuda[hidden] {
   display: none;
 }
 
@@ -600,6 +696,7 @@ footer {
 
 /* Historial y estadísticas */
 #historial.historial-contenedor,
+#calendario.calendario-contenedor,
 #estadisticas.estadisticas-contenedor {
   width: 80%;
   margin: 30px auto;
@@ -615,6 +712,7 @@ footer {
 }
 
 .historial-titulo,
+.calendario-titulo,
 .estadisticas-titulo {
   margin: 0 0 8px;
   color: var(--texto);
@@ -623,6 +721,7 @@ footer {
 }
 
 .historial-descripcion,
+.calendario-descripcion,
 .estadisticas-descripcion {
   margin-bottom: 25px;
   color: var(--texto-suave);
@@ -804,6 +903,236 @@ footer {
   font-size: 0.95rem;
 }
 
+/* Calendario */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.calendario-controles {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.calendario-mes {
+  margin: 0;
+  color: var(--texto);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.btn-mes {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex: none;
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  background-color: #f3fbff;
+  background-image: none;
+  box-shadow: none;
+  color: var(--texto);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.btn-mes:hover:not(:disabled) {
+  border-color: var(--celeste-fuerte);
+  background-color: #dff5ff;
+  background-image: none;
+  transform: none;
+}
+
+.btn-mes:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendario-grilla {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+
+.calendario-grilla th {
+  padding-bottom: 4px;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.calendario-grilla th abbr {
+  text-decoration: none;
+}
+
+.dia-calendario {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  min-height: 46px;
+  padding: 4px 2px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background-color: var(--blanco);
+  background-image: none;
+  box-shadow: none;
+  color: var(--texto);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.1;
+  transition: transform 0.15s ease;
+}
+
+button.dia-calendario:hover,
+button.dia-calendario:focus-visible {
+  border-color: var(--celeste-fuerte);
+  background-image: none;
+  transform: translateY(-2px);
+}
+
+.dia-cara {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.dia-sin-registros {
+  color: #9fb3c4;
+  font-weight: 400;
+}
+
+.dia-fuera-de-mes {
+  padding: 0;
+}
+
+.dia-hoy {
+  outline: 2px solid var(--celeste-fuerte);
+  outline-offset: 1px;
+}
+
+.dia-seleccionado {
+  border-width: 2px;
+  border-color: var(--texto);
+}
+
+/* Cinco niveles, de rojo a verde */
+.nivel-muy-bajo {
+  border-color: #f2a8a8;
+  background-color: #fee2e2;
+}
+
+.nivel-bajo {
+  border-color: #f8c48c;
+  background-color: #ffedd5;
+}
+
+.nivel-neutro {
+  border-color: #efd07a;
+  background-color: #fef6d3;
+}
+
+.nivel-alto {
+  border-color: #bfe08a;
+  background-color: #eaf8d4;
+}
+
+.nivel-muy-alto {
+  border-color: #8fd8ac;
+  background-color: #dcf7e7;
+}
+
+.calendario-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calendario-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+}
+
+.leyenda-muestra {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  place-items: center;
+}
+
+.calendario-detalle {
+  margin-top: 16px;
+}
+
+.calendario-detalle:empty {
+  display: none;
+}
+
+.detalle-titulo {
+  margin: 0 0 10px;
+  color: var(--texto);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.detalle-promedio {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.calendario-vacio {
+  padding: 18px;
+  border: 1px dashed var(--borde);
+  border-radius: 6px;
+  background-color: #f4fbff;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+/* Móvil: la grilla de 7 columnas necesita más ancho que el resto de
+   las tarjetas para que cada día siga siendo tocable. */
+@media (max-width: 768px) {
+  #calendario.calendario-contenedor {
+    width: 92%;
+    padding: 18px 12px;
+  }
+
+  .calendario-grilla {
+    border-spacing: 3px;
+  }
+
+  .dia-calendario {
+    min-height: 44px;
+    font-size: 0.68rem;
+  }
+
+  .dia-cara {
+    font-size: 1.05rem;
+  }
+}
+
 /* Escritorio */
 @media (min-width: 769px) {
   .navbar {
@@ -834,6 +1163,7 @@ footer {
   }
 
   #historial.historial-contenedor,
+  #calendario.calendario-contenedor,
   #estadisticas.estadisticas-contenedor {
     padding: 24px;
     width: 50%;

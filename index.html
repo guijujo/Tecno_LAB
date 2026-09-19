@@ -43,6 +43,7 @@
           </button>
         </li>
         <li><a href="#historial">Historial</a></li>
+        <li><a href="#calendario">Calendario</a></li>
         <li><a href="#estadisticas">Estadísticas</a></li>
         <li id="menu-descargas" class="descargas">
           <button
@@ -149,6 +150,13 @@
                 <strong id="valor-intensidad">5</strong>
                 <span id="descripcion-intensidad">Se siente moderada</span>
               </div>
+              <p
+                id="aviso-intensidad"
+                class="aviso-intensidad"
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
             </div>
 
             <div class="campo-formulario">
@@ -200,6 +208,31 @@
           <button id="btn-importar-registro" type="button">
             Actualizar registros
           </button>
+        </aside>
+
+        <aside
+          id="modal-sugerencia"
+          class="panel-sugerencia"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-sugerencia"
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          <button
+            id="btn-cerrar-sugerencia"
+            class="btn-cerrar-sugerencia"
+            type="button"
+            aria-label="Cerrar sugerencia"
+          >
+            X
+          </button>
+          <p id="sugerencia-emocion" class="sugerencia-emocion"></p>
+          <h2 id="titulo-sugerencia"></h2>
+          <p id="sugerencia-intro" class="sugerencia-intro"></p>
+          <ul id="sugerencia-ideas" class="sugerencia-ideas"></ul>
+          <p id="sugerencia-ayuda" class="sugerencia-ayuda" hidden></p>
+          <button id="btn-listo-sugerencia" type="button">Entendido</button>
         </aside>
 
         <div id="modal-overlay-bg" class="modal-overlay-bg" hidden></div>
@@ -270,6 +303,63 @@
           </div>
           <div id="lista-historial" class="lista-registros"></div>
         </div>
+      </section>
+
+      <section id="calendario" class="calendario-contenedor">
+        <h2 class="calendario-titulo">Calendario</h2>
+        <p class="calendario-descripcion">
+          Cada día muestra el promedio de cómo te fuiste sintiendo. Tocá un día
+          para ver sus registros.
+        </p>
+
+        <div class="calendario-controles">
+          <button
+            id="btn-mes-anterior"
+            class="btn-mes"
+            type="button"
+            aria-label="Mes anterior"
+          >
+            ‹
+          </button>
+          <h3 id="calendario-mes" class="calendario-mes" aria-live="polite">
+            &nbsp;
+          </h3>
+          <button
+            id="btn-mes-siguiente"
+            class="btn-mes"
+            type="button"
+            aria-label="Mes siguiente"
+          >
+            ›
+          </button>
+        </div>
+
+        <table class="calendario-grilla">
+          <caption class="visualmente-oculto">
+            Promedio emocional de cada día del mes
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col"><abbr title="Lunes">L</abbr></th>
+              <th scope="col"><abbr title="Martes">M</abbr></th>
+              <th scope="col"><abbr title="Miércoles">X</abbr></th>
+              <th scope="col"><abbr title="Jueves">J</abbr></th>
+              <th scope="col"><abbr title="Viernes">V</abbr></th>
+              <th scope="col"><abbr title="Sábado">S</abbr></th>
+              <th scope="col"><abbr title="Domingo">D</abbr></th>
+            </tr>
+          </thead>
+          <tbody id="calendario-dias"></tbody>
+        </table>
+
+        <ul id="calendario-leyenda" class="calendario-leyenda"></ul>
+
+        <div
+          id="calendario-detalle"
+          class="calendario-detalle"
+          role="status"
+          aria-live="polite"
+        ></div>
       </section>
 
       <section id="estadisticas" class="estadisticas-contenedor">
