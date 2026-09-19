@@ -2039,9 +2039,14 @@ function registrarServiceWorker() {
   // Nunca se recarga de prepotencia: recargar mientras alguien escribe
   // una observación le borraría lo que estaba cargando. La página se
   // actualiza recién cuando aceptan el aviso.
+  // En la primera visita el worker toma control con clients.claim() y eso
+  // también dispara controllerchange. Recargar ahí sería una recarga de
+  // más: solo interesa cuando se reemplaza a un worker que ya controlaba.
+  const habiaWorkerPrevio = Boolean(navigator.serviceWorker.controller);
   let recargando = false;
+
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (recargando) {
+    if (recargando || !habiaWorkerPrevio) {
       return;
     }
     recargando = true;
