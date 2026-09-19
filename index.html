@@ -3,14 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Registro emocional educativo de TECNO-LAB: anotá tu emoción, su intensidad y una observación. Los datos quedan guardados solo en tu navegador."
+    />
+    <meta name="theme-color" content="#0d1b2a" />
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="icon" type="image/jpeg" href="img/favicon.png" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="img/icono-512.png" />
     <title>Registro Emocional - TECNO-LAB</title>
   </head>
   <body>
     <nav class="navbar">
       <div class="logo">
-        <a href="#">
+        <a href="#inicio">
           <img src="img/favicon.png" alt="Proyecto Nosotros" class="logo-icon" />
         </a>
         <span class="logo-texto">Registro Emocional</span>
@@ -27,30 +34,41 @@
       </button>
       <ul id="menu-navegacion" class="nav-links">
         <li>
-          <a
+          <button
             id="btn-actualizar-registros"
-            href="#actualizar-registros"
+            class="nav-boton"
+            type="button"
+            aria-haspopup="dialog"
             aria-expanded="false"
             aria-controls="actualizar-registros"
-            >Actualizar Registros</a
           >
+            Actualizar Registros
+          </button>
         </li>
         <li><a href="#historial">Historial</a></li>
+        <li><a href="#calendario">Calendario</a></li>
         <li><a href="#estadisticas">Estadísticas</a></li>
-        <div id="menu-descargas" class="descargas">
-          <a
+        <li id="menu-descargas" class="descargas">
+          <button
             id="btn-descargas"
-            class="nav-link"
-            href="#"
-            onclick="toggleMenu(event)"
-            >Descargar Historial ▾</a
+            class="nav-boton"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="dropdown-descargas"
           >
+            Descargar Historial ▾
+          </button>
 
           <div id="dropdown-descargas" class="submenu-contenido">
-            <a href="#" class="descargar">Descargar y Pegar</a>
-            <a href="#" class="descragadocumento">Descargar Documento PDF</a>
+            <button id="btn-descargar-texto" class="submenu-item" type="button">
+              Descargar
+            </button>
+            <button id="btn-descargar-pdf" class="submenu-item" type="button">
+              Descargar en PDF
+            </button>
           </div>
-        </div>
+        </li>
       </ul>
     </nav>
 
@@ -66,7 +84,7 @@
         </button>
         <div id="contenido-resumen" class="contenido-inicio">
           <h3>Último registro</h3>
-          <p id="resumen-fecha">Sin registros</p>
+          <p id="resumen-fecha"><i>Sin registros</i></p>
           <h3>Intensidad</h3>
           <p id="resumen-intensidad"><i>Sin registros</i></p>
           <h3>Emoción más reciente</h3>
@@ -85,16 +103,15 @@
           </p>
 
           <form id="form-emocion">
-            <br />
-            <div>
+            <div class="campo-formulario">
               <label for="fecha">Fecha</label>
               <input class="casilladefecha" type="date" id="fecha" readonly />
             </div>
-            <br />
-            <div>
-              <label>Emoción</label>
+
+            <div class="campo-formulario">
+              <label for="emocion-select">Emoción</label>
               <select id="emocion-select" class="selectemocion">
-                <option disabled selected style="display: none">
+                <option value="" disabled selected style="display: none">
                   Seleccioná una emoción
                 </option>
                 <option value="😀 Felicidad">😀 Felicidad</option>
@@ -103,52 +120,57 @@
                 <option value="😢 Tristeza">😢 Tristeza</option>
                 <option value="😠 Enojo">😠 Enojo</option>
                 <option value="💪 Motivación">💪 Motivación</option>
-                <option value="😰 Ansiedad">😰 Ansiedad</option>
                 <option value="😤 Frustración">😤 Frustración</option>
                 <option value="😳 Vergüenza">😳 Vergüenza</option>
                 <option value="😥 Culpa">😥 Culpa</option>
-                <option value="😡 Orgullo">😡 Orgullo</option>
+                <option value="😎 Orgullo">😎 Orgullo</option>
                 <option value="🥰 Gratitud">🥰 Gratitud</option>
                 <option value="😍 Amor">😍 Amor</option>
                 <option value="😒 Celos">😒 Celos</option>
-                <option value="🤬 Envidia">🤬 Envidia</option>
+                <option value="😖 Envidia">😖 Envidia</option>
                 <option value="😞 Decepción">😞 Decepción</option>
                 <option value="😇 Esperanza">😇 Esperanza</option>
               </select>
             </div>
-            <br />
-            <div>
-              <label for="intensidad">Intensidad (0 a 10)</label><br />
+
+            <div class="campo-formulario">
+              <label for="intensidad">Intensidad (0 a 10)</label>
               <input
                 type="range"
                 class="intensidadmedidor"
                 id="intensidad"
                 min="0"
                 max="10"
-                step="0.1"
+                step="1"
                 value="5"
               />
               <div class="escala-intensidad" aria-hidden="true">
                 <span>0</span><span>1</span><span>2</span><span>3</span
-                ><span>4</span><span>5</span> <span>6</span><span>7</span
+                ><span>4</span><span>5</span><span>6</span><span>7</span
                 ><span>8</span><span>9</span><span>10</span>
               </div>
               <div class="resultado-intensidad">
                 <strong id="valor-intensidad">5</strong>
                 <span id="descripcion-intensidad">Se siente moderada</span>
               </div>
+              <p
+                id="aviso-intensidad"
+                class="aviso-intensidad"
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
             </div>
-            <br />
 
-            <div>
-              <label for="observacion">Observación</label><br />
+            <div class="campo-formulario">
+              <label for="observacion">Observación</label>
               <textarea
                 id="observacion"
                 placeholder="Escribí una observación breve"
                 class="areadeobservacion"
               ></textarea>
             </div>
-            <br />
+
             <button type="submit">Registrar emoción</button>
           </form>
         </div>
@@ -179,6 +201,9 @@
               accept=".txt,.json,.csv,text/plain,application/json,text/csv"
             />
           </label>
+          <label class="etiqueta-pegar" for="registro-para-pegar"
+            >Contenido del respaldo</label
+          >
           <textarea
             id="registro-para-pegar"
             placeholder="Pegá aquí el registro descargado"
@@ -186,6 +211,31 @@
           <button id="btn-importar-registro" type="button">
             Actualizar registros
           </button>
+        </aside>
+
+        <aside
+          id="modal-sugerencia"
+          class="panel-sugerencia"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-sugerencia"
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          <button
+            id="btn-cerrar-sugerencia"
+            class="btn-cerrar-sugerencia"
+            type="button"
+            aria-label="Cerrar sugerencia"
+          >
+            X
+          </button>
+          <p id="sugerencia-emocion" class="sugerencia-emocion"></p>
+          <h2 id="titulo-sugerencia"></h2>
+          <p id="sugerencia-intro" class="sugerencia-intro"></p>
+          <ul id="sugerencia-ideas" class="sugerencia-ideas"></ul>
+          <p id="sugerencia-ayuda" class="sugerencia-ayuda" hidden></p>
+          <button id="btn-listo-sugerencia" type="button">Entendido</button>
         </aside>
 
         <div id="modal-overlay-bg" class="modal-overlay-bg" hidden></div>
@@ -199,8 +249,14 @@
         ></div>
 
         <div id="contenedorBloqueo" class="pantalla-bloqueo-privacidad oculto">
-          <div class="importante-privacidad" id="aviso-privacidad">
-            <h3>Nota de privacidad</h3>
+          <div
+            class="importante-privacidad"
+            id="aviso-privacidad"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-privacidad"
+          >
+            <h3 id="titulo-privacidad">Nota de privacidad</h3>
             <p>
               Este proyecto guarda los registros
               <strong>de forma local</strong> en el caso de ser descargados como
@@ -212,7 +268,7 @@
               <strong>IMPORTANTE:</strong> No reemplaza el acompañamiento de una
               persona adulta o profesional.
             </p>
-            <button id="btnEntendido">Aceptar y continuar</button>
+            <button id="btnEntendido" type="button">Aceptar y continuar</button>
           </div>
         </div>
       </section>
@@ -232,7 +288,10 @@
               type="button"
               aria-label="Buscar en el historial"
               aria-expanded="false"
-            >⌕</button>
+              aria-controls="busqueda-historial"
+            >
+              ⌕
+            </button>
           </div>
           <div id="busqueda-historial" class="busqueda-historial" hidden>
             <label for="campo-busqueda-historial"
@@ -247,6 +306,63 @@
           </div>
           <div id="lista-historial" class="lista-registros"></div>
         </div>
+      </section>
+
+      <section id="calendario" class="calendario-contenedor">
+        <h2 class="calendario-titulo">Calendario</h2>
+        <p class="calendario-descripcion">
+          Cada día muestra el promedio de cómo te fuiste sintiendo. Tocá un día
+          para ver sus registros.
+        </p>
+
+        <div class="calendario-controles">
+          <button
+            id="btn-mes-anterior"
+            class="btn-mes"
+            type="button"
+            aria-label="Mes anterior"
+          >
+            ‹
+          </button>
+          <h3 id="calendario-mes" class="calendario-mes" aria-live="polite">
+            &nbsp;
+          </h3>
+          <button
+            id="btn-mes-siguiente"
+            class="btn-mes"
+            type="button"
+            aria-label="Mes siguiente"
+          >
+            ›
+          </button>
+        </div>
+
+        <table class="calendario-grilla">
+          <caption class="visualmente-oculto">
+            Promedio emocional de cada día del mes
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col"><abbr title="Lunes">L</abbr></th>
+              <th scope="col"><abbr title="Martes">M</abbr></th>
+              <th scope="col"><abbr title="Miércoles">X</abbr></th>
+              <th scope="col"><abbr title="Jueves">J</abbr></th>
+              <th scope="col"><abbr title="Viernes">V</abbr></th>
+              <th scope="col"><abbr title="Sábado">S</abbr></th>
+              <th scope="col"><abbr title="Domingo">D</abbr></th>
+            </tr>
+          </thead>
+          <tbody id="calendario-dias"></tbody>
+        </table>
+
+        <ul id="calendario-leyenda" class="calendario-leyenda"></ul>
+
+        <div
+          id="calendario-detalle"
+          class="calendario-detalle"
+          role="status"
+          aria-live="polite"
+        ></div>
       </section>
 
       <section id="estadisticas" class="estadisticas-contenedor">
@@ -282,7 +398,18 @@
       </section>
     </main>
 
-    <footer id="descargar">
+    <div
+      id="aviso-actualizacion"
+      class="aviso-actualizacion"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <span>Hay una versión nueva de la página.</span>
+      <button id="btn-actualizar-version" type="button">Actualizar</button>
+    </div>
+
+    <footer id="pie-pagina">
       <img
         src="img/icono-circular.png"
         alt="logo Proyecto Nosotros"
@@ -292,7 +419,9 @@
       <p>Tecno-LAB | Proyecto Nosotros</p>
       <p>Tus registros son privados.</p>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <!-- jsPDF 2.5.1, servido desde el repo para que el PDF también
+         funcione sin conexión. -->
+    <script src="js/jspdf.umd.min.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

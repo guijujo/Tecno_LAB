@@ -1,0 +1,32 @@
+{
+  "name": "Registro Emocional - TECNO-LAB",
+  "short_name": "Registro Emocional",
+  "description": "Anotá tu emoción, su intensidad y una observación breve. Los registros quedan guardados solo en tu dispositivo.",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#02070d",
+  "theme_color": "#0d1b2a",
+  "icons": [
+    {
+      "src": "img/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icono-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
