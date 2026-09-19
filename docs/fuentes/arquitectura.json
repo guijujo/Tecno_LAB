@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Registro Emocional · TECNO-LAB",
+    "output": "registro-emocional-arquitectura.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "flujo-principal",
+        "label": "Registrar una emoción",
+        "focus": [
+          "persona",
+          "interfaz",
+          "logica",
+          "almacenamiento"
+        ],
+        "note": "El camino de un registro: del formulario al almacenamiento del navegador."
+      },
+      {
+        "id": "sin-conexion",
+        "label": "Funcionar sin conexión",
+        "focus": [
+          "pages",
+          "sw",
+          "cache",
+          "interfaz"
+        ],
+        "note": "GitHub Pages entrega los archivos una vez; después el service worker los sirve desde la caché."
+      },
+      {
+        "id": "respaldos",
+        "label": "Respaldos y exportación",
+        "focus": [
+          "logica",
+          "almacenamiento",
+          "jspdf",
+          "archivos"
+        ],
+        "note": "Las dos salidas posibles: un JSON de respaldo y un PDF para compartir."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "persona",
+      "type": "external",
+      "label": "Quien registra",
+      "sublabel": "Estudiante",
+      "pos": [
+        40,
+        240
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "pages",
+      "type": "cloud",
+      "label": "GitHub Pages",
+      "sublabel": "HTTPS · solo archivos",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "tag": "sin backend"
+    },
+    {
+      "id": "sw",
+      "type": "frontend",
+      "label": "Service worker",
+      "sublabel": "sw.js",
+      "pos": [
+        260,
+        80
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "cache",
+      "type": "database",
+      "label": "Cache Storage",
+      "sublabel": "archivos del sitio",
+      "pos": [
+        480,
+        80
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "interfaz",
+      "type": "frontend",
+      "label": "Interfaz",
+      "sublabel": "index.html · style.css",
+      "pos": [
+        260,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "logica",
+      "type": "frontend",
+      "label": "Lógica",
+      "sublabel": "script.js",
+      "pos": [
+        480,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "almacenamiento",
+      "type": "database",
+      "label": "localStorage",
+      "sublabel": "registros_emocionales",
+      "pos": [
+        700,
+        240
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "3 claves"
+    },
+    {
+      "id": "jspdf",
+      "type": "frontend",
+      "label": "jsPDF",
+      "sublabel": "en el repositorio",
+      "pos": [
+        480,
+        400
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "archivos",
+      "type": "external",
+      "label": "Descargas",
+      "sublabel": "JSON y PDF",
+      "pos": [
+        700,
+        400
+      ],
+      "size": [
+        160,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Tu dispositivo · los registros no salen de acá",
+      "wraps": [
+        "sw",
+        "cache",
+        "interfaz",
+        "logica",
+        "almacenamiento",
+        "jspdf",
+        "archivos"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "persona-usa",
+      "from": "persona",
+      "to": "interfaz",
+      "label": "usa",
+      "variant": "emphasis"
+    },
+    {
+      "id": "interfaz-logica",
+      "from": "interfaz",
+      "to": "logica"
+    },
+    {
+      "id": "guarda-registros",
+      "from": "logica",
+      "to": "almacenamiento",
+      "label": "guarda y lee",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pages-publica",
+      "from": "pages",
+      "to": "sw",
+      "label": "publica",
+      "variant": "dashed"
+    },
+    {
+      "id": "sw-precarga",
+      "from": "sw",
+      "to": "cache",
+      "label": "precarga"
+    },
+    {
+      "id": "sw-sirve",
+      "from": "sw",
+      "to": "interfaz",
+      "label": "sirve sin conexión",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "arma-pdf",
+      "from": "logica",
+      "to": "jspdf",
+      "label": "arma el PDF",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "pdf-descarga",
+      "from": "jspdf",
+      "to": "archivos"
+    },
+    {
+      "id": "json-respaldo",
+      "from": "almacenamiento",
+      "to": "archivos",
+      "label": "respaldo JSON",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Sin servidor",
+      "items": [
+        "GitHub Pages solo entrega archivos estáticos"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Sin conexión",
+      "items": [
+        "El service worker precarga la página entera"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Privacidad",
+      "items": [
+        "Los registros viven solo en el navegador"
+      ]
+    }
+  ]
+}

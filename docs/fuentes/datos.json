@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Recorrido de un registro emocional",
+    "output": "registro-emocional-datos.html",
+    "viewBox": [
+      1080,
+      520
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "alta",
+        "label": "Registro nuevo",
+        "focus": [
+          "formulario",
+          "normaliza",
+          "storage"
+        ],
+        "note": "Del formulario al navegador: todo se normaliza antes de guardarse."
+      },
+      {
+        "id": "importar",
+        "label": "Recuperar un respaldo",
+        "focus": [
+          "respaldo",
+          "normaliza",
+          "storage"
+        ],
+        "note": "Un archivo JSON entra por la misma puerta de validacion que un registro nuevo."
+      },
+      {
+        "id": "lectura-vistas",
+        "label": "De vuelta a la pantalla",
+        "focus": [
+          "storage",
+          "lectura",
+          "vistas"
+        ],
+        "note": "Una sola lectura tolerante alimenta el historial, el calendario y las estadisticas."
+      }
+    ]
+  },
+  "stages": [
+    {
+      "label": "Entrada"
+    },
+    {
+      "label": "Normalización"
+    },
+    {
+      "label": "Guardado"
+    },
+    {
+      "label": "Lectura"
+    },
+    {
+      "label": "Vistas"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "formulario",
+      "type": "frontend",
+      "label": "Formulario",
+      "sublabel": "carga diaria",
+      "stage": 0,
+      "row": 0,
+      "tag": "alta"
+    },
+    {
+      "id": "respaldo",
+      "type": "external",
+      "label": "Respaldo",
+      "sublabel": "archivo JSON",
+      "stage": 0,
+      "row": 2,
+      "tag": "importar"
+    },
+    {
+      "id": "normaliza",
+      "type": "security",
+      "label": "Normalización",
+      "sublabel": "fecha y escala",
+      "stage": 1,
+      "row": 1,
+      "tag": "descarta inválidos"
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "localStorage",
+      "sublabel": "registros",
+      "stage": 2,
+      "row": 1,
+      "tag": "solo local"
+    },
+    {
+      "id": "lectura",
+      "type": "backend",
+      "label": "Lectura tolerante",
+      "sublabel": "leerRegistros()",
+      "stage": 3,
+      "row": 1,
+      "tag": "tolera errores"
+    },
+    {
+      "id": "vistas",
+      "type": "frontend",
+      "label": "Vistas",
+      "sublabel": "tres secciones",
+      "stage": 4,
+      "row": 1,
+      "tag": "misma fuente"
+    }
+  ],
+  "flows": [
+    {
+      "id": "alta-nueva",
+      "from": "formulario",
+      "to": "normaliza",
+      "label": "registro nuevo",
+      "classification": "lo que se escribe",
+      "variant": "emphasis"
+    },
+    {
+      "id": "importa-respaldo",
+      "from": "respaldo",
+      "to": "normaliza",
+      "label": "importar",
+      "classification": "archivo pegado",
+      "variant": "dashed"
+    },
+    {
+      "id": "guarda",
+      "from": "normaliza",
+      "to": "storage",
+      "label": "guardar",
+      "classification": "JSON serializado",
+      "variant": "emphasis"
+    },
+    {
+      "id": "lee",
+      "from": "storage",
+      "to": "lectura",
+      "label": "leer",
+      "variant": "emphasis"
+    },
+    {
+      "id": "render",
+      "from": "lectura",
+      "to": "vistas",
+      "label": "dibujar"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Una sola puerta",
+      "items": [
+        "Un registro nuevo y un respaldo importado pasan por la misma normalización"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Lectura tolerante",
+      "items": [
+        "Un dato corrupto se descarta en la lectura en vez de romper la página"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Tres lecturas",
+      "items": [
+        "Historial, calendario y estadísticas leen todos la misma fuente"
+      ]
+    }
+  ]
+}

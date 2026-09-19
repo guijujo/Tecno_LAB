@@ -1,0 +1,206 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Registrar una emoción",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "registro-emocional-flujo.html",
+    "views": [
+      {
+        "id": "camino",
+        "label": "Camino normal",
+        "focus": [
+          "elige",
+          "aviso",
+          "guarda",
+          "storage",
+          "vistas"
+        ],
+        "note": "El recorrido completo cuando se carga una emoción."
+      },
+      {
+        "id": "acompanamiento",
+        "label": "Rama de acompañamiento",
+        "focus": [
+          "guarda",
+          "sugerencia",
+          "ayuda"
+        ],
+        "note": "Qué aparece cuando la intensidad es alta, y qué se reserva para 9 y 10."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "persona",
+      "label": "Quien registra"
+    },
+    {
+      "id": "app",
+      "label": "La página"
+    },
+    {
+      "id": "apoyo",
+      "label": "Acompañamiento",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "cargar",
+      "label": "Cargar",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "guardar",
+      "label": "Guardar",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "responder",
+      "label": "Responder",
+      "fromCol": 4,
+      "toCol": 4,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "elige",
+    "aviso",
+    "guarda",
+    "storage",
+    "vistas"
+  ],
+  "nodes": [
+    {
+      "id": "elige",
+      "lane": "persona",
+      "col": 0,
+      "type": "external",
+      "label": "Elegir",
+      "sublabel": "emoción e intensidad",
+      "width": 132
+    },
+    {
+      "id": "aviso",
+      "lane": "app",
+      "col": 1,
+      "type": "frontend",
+      "label": "Aviso en vivo",
+      "sublabel": "si llega a 7",
+      "width": 132
+    },
+    {
+      "id": "guarda",
+      "lane": "app",
+      "col": 2,
+      "type": "frontend",
+      "label": "Guardar",
+      "sublabel": "registro nuevo",
+      "width": 132
+    },
+    {
+      "id": "storage",
+      "lane": "app",
+      "col": 3,
+      "type": "database",
+      "label": "localStorage",
+      "sublabel": "solo local",
+      "width": 132
+    },
+    {
+      "id": "vistas",
+      "lane": "app",
+      "col": 4,
+      "type": "frontend",
+      "label": "Vistas",
+      "sublabel": "se actualizan",
+      "width": 132
+    },
+    {
+      "id": "sugerencia",
+      "lane": "apoyo",
+      "col": 3,
+      "type": "security",
+      "label": "Sugerencias",
+      "sublabel": "ideas concretas",
+      "tag": "desde 7",
+      "width": 132
+    },
+    {
+      "id": "ayuda",
+      "lane": "apoyo",
+      "col": 4,
+      "type": "security",
+      "label": "Pedir ayuda",
+      "sublabel": "persona adulta",
+      "tag": "9 y 10",
+      "width": 132
+    }
+  ],
+  "edges": [
+    {
+      "id": "elige-aviso",
+      "from": "elige",
+      "to": "aviso",
+      "variant": "default"
+    },
+    {
+      "id": "aviso-guarda",
+      "from": "aviso",
+      "to": "guarda",
+      "label": "registrar",
+      "variant": "emphasis"
+    },
+    {
+      "id": "guarda-storage",
+      "from": "guarda",
+      "to": "storage",
+      "label": "escribe",
+      "variant": "emphasis"
+    },
+    {
+      "id": "storage-vistas",
+      "from": "storage",
+      "to": "vistas",
+      "label": "relee",
+      "variant": "emphasis"
+    },
+    {
+      "id": "guarda-sugerencia",
+      "from": "guarda",
+      "to": "sugerencia",
+      "label": "intensidad alta",
+      "variant": "security",
+      "role": "branch"
+    },
+    {
+      "id": "sugerencia-ayuda",
+      "from": "sugerencia",
+      "to": "ayuda",
+      "label": "muy alta",
+      "variant": "security",
+      "role": "branch"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Guardar primero",
+      "items": [
+        "El registro se guarda antes de mostrar cualquier sugerencia"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Reservado",
+      "items": [
+        "El recordatorio de pedir ayuda queda solo para 9 y 10"
+      ]
+    }
+  ]
+}

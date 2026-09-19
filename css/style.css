@@ -18,6 +18,13 @@
 }
 
 /* Base */
+html {
+  /* Los enlaces del menú saltan a su sección deslizándose en lugar de
+     cortar de golpe. La visita guiada pide desplazamiento instantáneo
+     por su cuenta, porque mide posiciones apenas termina de moverse. */
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -70,6 +77,21 @@ footer {
 
 .oculto {
   display: none !important;
+}
+
+/* Aparición al entrar en pantalla. La clase la agrega el JS: sin JS
+   nada se oculta nunca. */
+.revelar {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.revelar.revelado {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .sin-scroll {
@@ -1506,11 +1528,22 @@ button.dia-calendario:focus-visible {
 
 /* Accesibilidad: respetar a quien pide menos movimiento */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Sin animación de entrada, el contenido tiene que estar visible. */
+  .revelar {
+    opacity: 1;
+    transform: none;
   }
 }
