@@ -5,6 +5,7 @@
 --------------------------------------------------------------- */
 const CLAVE_REGISTROS = "registros_emocionales";
 const CLAVE_PRIVACIDAD = "nota_educativa_aceptada";
+const CLAVE_VISITA = "visita_guiada_vista";
 const INTENSIDAD_MIN = 0;
 const INTENSIDAD_MAX = 10;
 
@@ -216,6 +217,30 @@ const botonCerrarActualizar = document.getElementById("btn-cerrar-actualizar");
 const archivoRegistros = document.getElementById("archivo-registros");
 const campoPegar = document.getElementById("registro-para-pegar");
 const botonImportar = document.getElementById("btn-importar-registro");
+
+const contenedorPrivacidad = document.getElementById("contenedorBloqueo");
+const panelPrivacidad = document.getElementById("aviso-privacidad");
+const detallePrivacidad = document.getElementById("privacidad-detalle");
+const botonEntendido = document.getElementById("btnEntendido");
+const botonCerrarPrivacidad = document.getElementById("btn-cerrar-privacidad");
+const botonVerPrivacidad = document.getElementById("btn-ver-privacidad");
+
+const capaVisita = document.getElementById("visita-guiada");
+const focoVisita = document.getElementById("visita-foco");
+const globoVisita = document.getElementById("visita-globo");
+const pasoVisita = document.getElementById("visita-paso");
+const tituloVisita = document.getElementById("visita-titulo");
+const textoVisita = document.getElementById("visita-texto");
+const botonVerVisita = document.getElementById("btn-ver-visita");
+const botonVisitaAnterior = document.getElementById("btn-visita-anterior");
+const botonVisitaSiguiente = document.getElementById("btn-visita-siguiente");
+const botonVisitaSaltar = document.getElementById("btn-visita-saltar");
+
+const panelBorrar = document.getElementById("modal-borrar");
+const textoBorrar = document.getElementById("texto-borrar");
+const botonBorrarDatos = document.getElementById("btn-borrar-datos");
+const botonCancelarBorrar = document.getElementById("btn-cancelar-borrar");
+const botonConfirmarBorrar = document.getElementById("btn-confirmar-borrar");
 
 const panelSugerencia = document.getElementById("modal-sugerencia");
 const botonCerrarSugerencia = document.getElementById("btn-cerrar-sugerencia");
@@ -950,7 +975,18 @@ function atraparFoco(e, panel) {
   }
 }
 
+// "inicial" | "lectura" | null. Vive acá arriba porque modalAbierto()
+// necesita saber si la nota de privacidad está abierta.
+let modoPrivacidad = null;
+
 function modalAbierto() {
+  // La nota de privacidad va primero: se dibuja por encima de todo.
+  if (modoPrivacidad) {
+    return panelPrivacidad;
+  }
+  if (panelBorrar.classList.contains("modal-visible")) {
+    return panelBorrar;
+  }
   if (panelActualizar.classList.contains("modal-visible")) {
     return panelActualizar;
   }
@@ -961,12 +997,85 @@ function modalAbierto() {
 }
 
 function cerrarModal(panel) {
-  if (panel === panelActualizar) {
+  if (panel === panelPrivacidad) {
+    // El aviso de la primera visita es una puerta: solo se sale
+    // aceptándolo, así que Escape no lo cierra.
+    if (modoPrivacidad === "lectura") {
+      cerrarAvisoPrivacidad();
+    }
+  } else if (panel === panelBorrar) {
+    cerrarModalBorrar();
+  } else if (panel === panelActualizar) {
     cerrarModalActualizar();
   } else if (panel === panelSugerencia) {
     cerrarModalSugerencia();
   }
 }
+
+/* ---------------------------------------------------------------
+   Borrar todos los datos
+
+   Vive en el pie y no en el aviso de bienvenida a propósito: una
+   acción irreversible no va en la pantalla por la que todos pasan.
+--------------------------------------------------------------- */
+function abrirModalBorrar() {
+  const cantidad = leerRegistros().length;
+
+  const marcas =
+    "las marcas de que ya aceptaste el aviso de privacidad y de que ya viste la visita guiada, así que las dos van a volver a aparecer";
+
+  textoBorrar.textContent =
+    cantidad === 0
+      ? `No tenés registros guardados. Se van a borrar ${marcas}.`
+      : `Se van a borrar ${cantidad} registro${cantidad === 1 ? "" : "s"} y ${marcas}.`;
+
+  panelBorrar.classList.add("modal-visible");
+  panelBorrar.setAttribute("aria-hidden", "false");
+  overlayModal.hidden = false;
+
+  // El foco va a Cancelar, nunca al botón que borra.
+  void panelBorrar.offsetHeight;
+  botonCancelarBorrar.focus();
+
+  if (document.activeElement !== botonCancelarBorrar) {
+    requestAnimationFrame(() => botonCancelarBorrar.focus());
+  }
+}
+
+function cerrarModalBorrar() {
+  panelBorrar.classList.remove("modal-visible");
+  panelBorrar.setAttribute("aria-hidden", "true");
+  overlayModal.hidden = true;
+  botonBorrarDatos.focus();
+}
+
+function borrarTodosLosDatos() {
+  try {
+    localStorage.removeItem(CLAVE_REGISTROS);
+    localStorage.removeItem(CLAVE_PRIVACIDAD);
+    localStorage.removeItem(CLAVE_VISITA);
+  } catch (error) {
+    mostrarAviso("No se pudieron borrar los datos en este navegador.", "error");
+    return;
+  }
+
+  cerrarModalBorrar();
+
+  // Se deja la interfaz como recién llegada: sin búsqueda abierta, sin
+  // día seleccionado y con el calendario de vuelta en el mes actual.
+  campoBusquedaHistorial.value = "";
+  busquedaHistorial.hidden = true;
+  botonBuscarHistorial.setAttribute("aria-expanded", "false");
+  diaSeleccionado = null;
+  mesVisible = null;
+
+  actualizarInterfaz();
+  mostrarAviso("Se borraron todos tus datos de este navegador.", "exito");
+}
+
+botonBorrarDatos.addEventListener("click", abrirModalBorrar);
+botonCancelarBorrar.addEventListener("click", cerrarModalBorrar);
+botonConfirmarBorrar.addEventListener("click", borrarTodosLosDatos);
 
 /* ---------------------------------------------------------------
    Modal de sugerencia
@@ -1149,9 +1258,65 @@ botonImportar.addEventListener("click", () => {
 /* ---------------------------------------------------------------
    Aviso de privacidad
 --------------------------------------------------------------- */
+function abrirAvisoPrivacidad(modo) {
+  modoPrivacidad = modo;
+
+  contenedorPrivacidad.classList.remove("oculto");
+  contenedorPrivacidad.classList.toggle("modo-inicial", modo === "inicial");
+  document.body.classList.add("sin-scroll");
+
+  // En la primera visita el detalle va plegado para que el aviso se
+  // pueda leer de un vistazo; si alguien lo abre a propósito desde el
+  // pie, es porque quiere leer todo.
+  detallePrivacidad.open = modo === "lectura";
+  botonEntendido.textContent =
+    modo === "inicial" ? "Aceptar y continuar" : "Cerrar";
+
+  // Se enfoca el diálogo, no el botón: así el lector de pantalla
+  // arranca por el título y el panel no se desplaza hasta el final.
+  void panelPrivacidad.offsetHeight;
+  panelPrivacidad.scrollTop = 0;
+  panelPrivacidad.focus();
+}
+
+function cerrarAvisoPrivacidad() {
+  const veniaDeLectura = modoPrivacidad === "lectura";
+
+  contenedorPrivacidad.classList.add("oculto");
+  document.body.classList.remove("sin-scroll");
+  modoPrivacidad = null;
+
+  // Solo se devuelve el foco al pie si se había abierto desde ahí;
+  // al aceptar en la primera visita saltaría al final de la página.
+  if (veniaDeLectura) {
+    botonVerPrivacidad.focus();
+  }
+}
+
 function iniciarAvisoPrivacidad() {
-  const contenedor = document.getElementById("contenedorBloqueo");
-  const botonEntendido = document.getElementById("btnEntendido");
+  botonEntendido.addEventListener("click", () => {
+    const eraPrimeraVisita = modoPrivacidad === "inicial";
+
+    if (eraPrimeraVisita) {
+      try {
+        localStorage.setItem(CLAVE_PRIVACIDAD, "true");
+      } catch (error) {
+        // Sin almacenamiento el aviso volverá a aparecer; no es bloqueante.
+      }
+    }
+
+    cerrarAvisoPrivacidad();
+
+    // Recién ahora, con la página ya destapada, arranca la visita.
+    if (eraPrimeraVisita && !visitaYaVista()) {
+      iniciarVisita();
+    }
+  });
+
+  botonCerrarPrivacidad.addEventListener("click", cerrarAvisoPrivacidad);
+  botonVerPrivacidad.addEventListener("click", () =>
+    abrirAvisoPrivacidad("lectura"),
+  );
 
   let yaAceptado = false;
   try {
@@ -1161,21 +1326,8 @@ function iniciarAvisoPrivacidad() {
   }
 
   if (!yaAceptado) {
-    contenedor.classList.remove("oculto");
-    document.body.classList.add("sin-scroll");
-    botonEntendido.focus();
+    abrirAvisoPrivacidad("inicial");
   }
-
-  botonEntendido.addEventListener("click", () => {
-    try {
-      localStorage.setItem(CLAVE_PRIVACIDAD, "true");
-    } catch (error) {
-      // Sin almacenamiento el aviso volverá a aparecer; no es bloqueante.
-    }
-
-    contenedor.classList.add("oculto");
-    document.body.classList.remove("sin-scroll");
-  });
 }
 
 /* ---------------------------------------------------------------
@@ -1515,6 +1667,248 @@ botonMesAnterior.addEventListener("click", () => {
 botonMesSiguiente.addEventListener("click", () => {
   mesVisible = desplazarMes(mesVisible, 1);
   renderCalendario();
+});
+
+/* ---------------------------------------------------------------
+   Visita guiada
+
+   Un recuadro que ilumina una parte de la página y un globo que la
+   explica. Arranca sola después de aceptar el aviso de privacidad, una
+   sola vez, y se puede repetir desde el pie.
+--------------------------------------------------------------- */
+const PASOS_VISITA = [
+  {
+    objetivo: ".cajaregistrar",
+    titulo: "Registrar cómo te sentís",
+    texto:
+      "Elegí una emoción, marcá qué tan intensa fue y, si querés, escribí una observación. Con eso el registro ya queda guardado.",
+  },
+  {
+    objetivo: "#btn-resumen",
+    titulo: "Tu último registro, a mano",
+    texto:
+      "Este botón te muestra el registro más reciente sin tener que bajar hasta el historial.",
+  },
+  {
+    objetivo: "#historial",
+    titulo: "El historial completo",
+    texto:
+      "Acá quedan todos tus registros. La lupa abre un buscador por fecha, emoción, intensidad u observación.",
+  },
+  {
+    objetivo: "#calendario",
+    titulo: "El mes de un vistazo",
+    texto:
+      "Cada día se pinta según el promedio de ese día, del rojo al verde. Tocá cualquiera para ver sus registros.",
+  },
+  {
+    objetivo: "#estadisticas",
+    titulo: "Tus números",
+    texto:
+      "Cuántos registros llevás, la intensidad promedio y qué emoción aparece más seguido.",
+  },
+  {
+    objetivo: "#menu-navegacion",
+    titulo: "Guardar y recuperar",
+    texto:
+      "Desde «Descargar Historial» podés bajar un respaldo o un PDF para mostrarle a un profesional. Con «Actualizar Registros» lo volvés a cargar.",
+    // En el teléfono ese menú vive detrás del botón de las tres rayas.
+    preparar: () => abrirMenuMovil(true),
+    limpiar: () => abrirMenuMovil(false),
+  },
+  {
+    objetivo: "#pie-pagina",
+    titulo: "Privacidad y datos",
+    texto:
+      "Tus registros quedan solo en este navegador. Desde el pie podés repetir esta visita, releer el aviso de privacidad o borrar todo lo guardado.",
+  },
+];
+
+let visitaActiva = false;
+let pasoActual = 0;
+let limpiezaPaso = null;
+
+function visitaYaVista() {
+  try {
+    return localStorage.getItem(CLAVE_VISITA) === "true";
+  } catch (error) {
+    return false;
+  }
+}
+
+function marcarVisitaVista() {
+  try {
+    localStorage.setItem(CLAVE_VISITA, "true");
+  } catch (error) {
+    // Sin almacenamiento la visita volverá a ofrecerse; no es grave.
+  }
+}
+
+function iniciarVisita() {
+  if (visitaActiva) {
+    return;
+  }
+
+  visitaActiva = true;
+  pasoActual = 0;
+  capaVisita.hidden = false;
+  // El primer recuadro aparece donde corresponde, sin venir volando
+  // desde la esquina.
+  focoVisita.classList.add("sin-animacion");
+  mostrarPaso(0);
+  requestAnimationFrame(() => focoVisita.classList.remove("sin-animacion"));
+
+  window.addEventListener("resize", reubicarVisita);
+}
+
+function terminarVisita() {
+  if (!visitaActiva) {
+    return;
+  }
+
+  if (limpiezaPaso) {
+    limpiezaPaso();
+    limpiezaPaso = null;
+  }
+
+  visitaActiva = false;
+  capaVisita.hidden = true;
+  window.removeEventListener("resize", reubicarVisita);
+  marcarVisitaVista();
+  botonVerVisita.focus();
+}
+
+function mostrarPaso(indice) {
+  if (limpiezaPaso) {
+    limpiezaPaso();
+    limpiezaPaso = null;
+  }
+
+  pasoActual = indice;
+  const paso = PASOS_VISITA[indice];
+
+  if (paso.preparar) {
+    paso.preparar();
+    limpiezaPaso = paso.limpiar || null;
+  }
+
+  pasoVisita.textContent = `Paso ${indice + 1} de ${PASOS_VISITA.length}`;
+  tituloVisita.textContent = paso.titulo;
+  textoVisita.textContent = paso.texto;
+
+  botonVisitaAnterior.disabled = indice === 0;
+  botonVisitaSiguiente.textContent =
+    indice === PASOS_VISITA.length - 1 ? "Terminar" : "Siguiente";
+
+  reubicarVisita();
+  globoVisita.focus();
+}
+
+function reubicarVisita() {
+  const objetivo = document.querySelector(PASOS_VISITA[pasoActual].objetivo);
+  if (!objetivo) {
+    return;
+  }
+
+  const altoPantalla = window.innerHeight;
+  const anchoPantalla = document.documentElement.clientWidth;
+  const margen = 8;
+  const borde = 4;
+
+  // Lo que vive dentro de la barra de navegación ya está siempre a la
+  // vista: no hay que desplazar nada ni esquivar la barra. Si se la
+  // esquivara, el recuadro terminaría debajo de ella, iluminando lo que
+  // haya en ese lugar en vez del menú.
+  const enLaBarra = barraNavegacion.contains(objetivo);
+  let minArriba = borde;
+
+  if (!enLaBarra) {
+    // Una sección alta no entra entera: se la alinea arriba y se ilumina
+    // solo su parte superior, para que quede lugar para el globo.
+    const esAlto = objetivo.getBoundingClientRect().height > altoPantalla * 0.6;
+    objetivo.scrollIntoView({ block: esAlto ? "start" : "center" });
+
+    const limiteArriba = barraNavegacion.getBoundingClientRect().height + 8;
+    minArriba = limiteArriba - margen;
+
+    if (objetivo.getBoundingClientRect().top < limiteArriba) {
+      window.scrollBy(0, objetivo.getBoundingClientRect().top - limiteArriba);
+    }
+  }
+
+  const caja = objetivo.getBoundingClientRect();
+
+  // El recuadro se recorta contra los bordes: sin esto, un objetivo que
+  // toca el borde de la pantalla se sale por el margen que le agregamos.
+  const arriba = Math.max(minArriba, caja.top - margen);
+  const izquierda = Math.max(borde, caja.left - margen);
+  const derecha = Math.min(anchoPantalla - borde, caja.right + margen);
+  const altoDeseado = Math.min(caja.height, altoPantalla * 0.55) + margen * 2;
+  const abajo = Math.min(altoPantalla - borde, arriba + altoDeseado);
+
+  focoVisita.style.top = `${arriba}px`;
+  focoVisita.style.left = `${izquierda}px`;
+  focoVisita.style.width = `${Math.max(0, derecha - izquierda)}px`;
+  focoVisita.style.height = `${Math.max(0, abajo - arriba)}px`;
+
+  ubicarGlobo(arriba, abajo, izquierda, derecha - izquierda);
+}
+
+function ubicarGlobo(focoArriba, focoAbajo, focoIzquierda, focoAncho) {
+  const separacion = 12;
+  const ancho = globoVisita.offsetWidth;
+  const altoGlobo = globoVisita.offsetHeight;
+  const anchoPantalla = document.documentElement.clientWidth;
+  const altoPantalla = window.innerHeight;
+
+  let arriba = focoAbajo + separacion;
+  if (arriba + altoGlobo > altoPantalla - separacion) {
+    arriba = focoArriba - altoGlobo - separacion;
+  }
+  if (arriba < separacion) {
+    arriba = Math.max(separacion, (altoPantalla - altoGlobo) / 2);
+  }
+
+  const izquierda = Math.min(
+    Math.max(separacion, focoIzquierda + focoAncho / 2 - ancho / 2),
+    Math.max(separacion, anchoPantalla - ancho - separacion),
+  );
+
+  globoVisita.style.top = `${arriba}px`;
+  globoVisita.style.left = `${izquierda}px`;
+}
+
+function pasoSiguiente() {
+  if (pasoActual >= PASOS_VISITA.length - 1) {
+    terminarVisita();
+    return;
+  }
+  mostrarPaso(pasoActual + 1);
+}
+
+botonVisitaSiguiente.addEventListener("click", pasoSiguiente);
+botonVisitaAnterior.addEventListener("click", () => {
+  if (pasoActual > 0) {
+    mostrarPaso(pasoActual - 1);
+  }
+});
+botonVisitaSaltar.addEventListener("click", terminarVisita);
+botonVerVisita.addEventListener("click", iniciarVisita);
+
+document.addEventListener("keydown", (e) => {
+  if (!visitaActiva) {
+    return;
+  }
+
+  if (e.key === "Escape") {
+    terminarVisita();
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    pasoSiguiente();
+  } else if (e.key === "ArrowLeft" && pasoActual > 0) {
+    e.preventDefault();
+    mostrarPaso(pasoActual - 1);
+  }
 });
 
 /* ---------------------------------------------------------------

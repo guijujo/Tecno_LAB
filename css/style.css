@@ -409,7 +409,8 @@ footer {
 
 /* Modales */
 .panel-actualizar-registros,
-.panel-sugerencia {
+.panel-sugerencia,
+.panel-borrar {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -435,7 +436,8 @@ footer {
 }
 
 .panel-actualizar-registros.modal-visible,
-.panel-sugerencia.modal-visible {
+.panel-sugerencia.modal-visible,
+.panel-borrar.modal-visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -452,7 +454,8 @@ footer {
 }
 
 .btn-cerrar-actualizar,
-.btn-cerrar-sugerencia {
+.btn-cerrar-sugerencia,
+.btn-cerrar-privacidad {
   position: absolute;
   top: 10px;
   right: 14px;
@@ -473,7 +476,8 @@ footer {
 }
 
 .btn-cerrar-actualizar:hover,
-.btn-cerrar-sugerencia:hover {
+.btn-cerrar-sugerencia:hover,
+.btn-cerrar-privacidad:hover {
   border-color: #64748b;
   background-color: #e2e8f0;
   background-image: none;
@@ -640,8 +644,11 @@ footer {
 }
 
 .importante-privacidad {
+  position: relative;
   width: 90%;
-  max-width: 500px;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
   padding: 30px;
   border: 2px solid var(--borde);
   border-radius: 12px;
@@ -694,6 +701,274 @@ footer {
   border: 1px solid #a7f3d0;
   background-color: #ecfdf5;
   color: #065f46;
+}
+
+/* Visita guiada */
+.visita-guiada {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+}
+
+.visita-guiada[hidden] {
+  display: none;
+}
+
+/* El oscurecido lo hace la sombra del recuadro: todo lo que queda
+   fuera del hueco se pinta, y el hueco deja ver la página. */
+.visita-foco {
+  position: fixed;
+  border: 2px solid var(--celeste);
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(3, 10, 17, 0.72);
+  pointer-events: none;
+  transition:
+    top 0.25s ease,
+    left 0.25s ease,
+    width 0.25s ease,
+    height 0.25s ease;
+}
+
+.visita-foco.sin-animacion {
+  transition: none;
+}
+
+.visita-globo {
+  position: fixed;
+  width: min(92vw, 340px);
+  padding: 18px 20px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #eef9ff);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  color: var(--texto);
+}
+
+.visita-paso {
+  margin-bottom: 4px;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.visita-titulo {
+  margin-bottom: 8px;
+  font-size: 1.15rem;
+}
+
+.visita-texto {
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.visita-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.visita-navegacion {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.visita-acciones button {
+  padding: 8px 14px;
+  font-size: 0.88rem;
+}
+
+.visita-secundario {
+  border-color: var(--borde);
+  background-color: #f3fbff;
+  background-image: none;
+  box-shadow: none;
+  color: var(--texto-suave);
+}
+
+.visita-secundario:hover:not(:disabled),
+.visita-secundario:focus-visible {
+  border-color: var(--celeste-fuerte);
+  background-color: #dff5ff;
+  background-image: none;
+  color: var(--texto);
+}
+
+.visita-secundario:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Confirmación de borrado */
+.panel-borrar {
+  /* Sigue el ancho compartido, pero un diálogo de dos botones no tiene
+     sentido a 900px: se acota sin dejar de acompañar a la variable. */
+  width: min(var(--ancho-caja), 460px);
+  border-top: 5px solid #dc2626;
+}
+
+.panel-borrar h2 {
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+}
+
+.panel-borrar p {
+  margin-bottom: 12px;
+  line-height: 1.55;
+}
+
+.borrar-aviso {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background-color: #fef2f2;
+  color: #7f1d1d;
+  font-size: 0.9rem;
+}
+
+.borrar-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.btn-peligro {
+  border-color: #b91c1c;
+  background-color: #dc2626;
+  background-image: none;
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.2);
+  color: var(--blanco);
+}
+
+.btn-peligro:hover,
+.btn-peligro:focus-visible {
+  border-color: #7f1d1d;
+  background-color: #b91c1c;
+  background-image: none;
+  color: var(--blanco);
+}
+
+.separador-pie {
+  margin: 0 8px;
+  color: var(--texto-suave);
+}
+
+/* Doble clase a propósito: con un solo selector empata en
+   especificidad con .enlace-privacidad y gana el que va último. */
+.enlace-privacidad.enlace-peligro {
+  color: #fca5a5;
+}
+
+.enlace-privacidad.enlace-peligro:hover,
+.enlace-privacidad.enlace-peligro:focus-visible {
+  color: #fee2e2;
+}
+
+/* Nota de privacidad */
+.pantalla-bloqueo-privacidad.modo-inicial .btn-cerrar-privacidad {
+  display: none;
+}
+
+.privacidad-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.privacidad-resumen li {
+  padding: 12px 14px;
+  border: 1px solid #d8eefc;
+  border-left: 4px solid var(--celeste-fuerte);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ffffff, #f2fbff);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.privacidad-detalle {
+  margin-bottom: 20px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background-color: #f8fdff;
+}
+
+.privacidad-detalle > summary {
+  padding: 12px 14px;
+  color: var(--celeste-fuerte);
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.privacidad-detalle > summary:focus-visible {
+  outline: 2px solid var(--celeste-fuerte);
+  outline-offset: -2px;
+}
+
+.privacidad-detalle[open] > summary {
+  border-bottom: 1px solid var(--borde);
+}
+
+.privacidad-detalle h4 {
+  margin: 16px 14px 6px;
+  color: var(--texto);
+  font-size: 0.95rem;
+}
+
+.privacidad-detalle p,
+.privacidad-detalle ul {
+  margin: 0 14px 10px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.privacidad-detalle ul {
+  padding-left: 18px;
+}
+
+.privacidad-detalle li {
+  margin-bottom: 6px;
+}
+
+.privacidad-detalle code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background-color: #e6f4fd;
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+
+/* Enlace del pie que vuelve a abrir la nota */
+.enlace-privacidad {
+  padding: 0;
+  border: 0;
+  background: none;
+  background-image: none;
+  box-shadow: none;
+  color: var(--celeste);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  text-decoration: underline;
+}
+
+.enlace-privacidad:hover,
+.enlace-privacidad:focus-visible {
+  border-color: transparent;
+  background: none;
+  background-image: none;
+  color: var(--blanco);
+  transform: none;
 }
 
 /* Historial y estadísticas */
