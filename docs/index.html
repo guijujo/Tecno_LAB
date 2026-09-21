@@ -100,14 +100,58 @@
     <nav class="navbar">
       <div class="logo">
         <a href="../index.html">
-          <img
-            src="../img/favicon.png"
-            alt="Proyecto Nosotros"
-            class="logo-icon"
-          />
+          <img src="../img/favicon.png" alt="Proyecto Nosotros" class="logo-icon" />
         </a>
         <span class="logo-texto">Registro Emocional</span>
       </div>
+      <button
+        id="btn-menu"
+        class="btn-menu"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="menu-navegacion"
+      >
+        ☰
+      </button>
+      <ul id="menu-navegacion" class="nav-links">
+        <li>
+          <button
+            id="btn-actualizar-registros"
+            class="nav-boton"
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="actualizar-registros"
+          >
+            Actualizar Registros
+          </button>
+        </li>
+        <li><a href="#historial">Historial</a></li>
+        <li><a href="#calendario">Calendario</a></li>
+        <li><a href="#estadisticas">Estadísticas</a></li>
+        <li id="menu-descargas" class="descargas">
+          <button
+            id="btn-descargas"
+            class="nav-boton"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="dropdown-descargas"
+          >
+            Descargar Historial ▾
+          </button>
+
+          <div id="dropdown-descargas" class="submenu-contenido">
+            <button id="btn-descargar-texto" class="submenu-item" type="button">
+              Descargar
+            </button>
+            <button id="btn-descargar-pdf" class="submenu-item" type="button">
+              Descargar en PDF
+            </button>
+          </div>
+        </li>
+      </ul>
     </nav>
 
     <main>
@@ -179,5 +223,6 @@
       <p><strong>Registro Emocional Web</strong></p>
       <p>Tecno-LAB | Proyecto Nosotros</p>
     </footer>
+    <script src="../js/script.js"></script>
   </body>
 </html>

@@ -1,0 +1,211 @@
+* Navegación */
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #030a11, #0d1b2a 58%, #111c2a);
+  color: var(--blanco);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-texto {
+  color: var(--blanco);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.logo-icon-footer {
+  width: 80px;
+  height: 80px;
+  margin-right: 10px;
+}
+
+.btn-menu {
+  display: block;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--blanco);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.btn-menu:hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--celeste);
+  transform: none;
+}
+
+.nav-links {
+  display: none;
+  flex-basis: 100%;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+  list-style: none;
+}
+
+.navbar.menu-abierto .nav-links {
+  display: flex;
+}
+
+.nav-links a {
+  color: var(--blanco);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--celeste);
+}
+
+/* Los disparadores del menú son <button> por accesibilidad, pero deben
+   verse igual que los enlaces de la barra. */
+.nav-links .nav-boton {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--blanco);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: left;
+  transition: color 0.3s ease;
+}
+
+.nav-links .nav-boton:hover,
+.nav-links .nav-boton:focus-visible {
+  border-color: transparent;
+  background: none;
+  color: var(--celeste);
+  transform: none;
+}
+
+.nav-links a:focus-visible,
+.nav-links .nav-boton:focus-visible,
+.btn-menu:focus-visible {
+  outline: 2px solid var(--celeste);
+  outline-offset: 3px;
+}
+
+.descargas {
+  position: relative;
+  display: inline-block;
+}
+
+#btn-descargas {
+  cursor: pointer;
+}
+
+.submenu-contenido {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  min-width: 180px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f7fcff, #edf7ff);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0s linear 0.2s;
+}
+
+.submenu-contenido a,
+.submenu-contenido .submenu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  transform: none;
+}
+
+.submenu-contenido a:hover,
+.submenu-contenido .submenu-item:hover,
+.submenu-contenido .submenu-item:focus-visible {
+  border-color: transparent;
+  outline: none;
+  background: #dff5ff;
+  color: var(--texto);
+  transform: none;
+}
+
+.mostrar-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+@media (min-width: 900px) {
+  .navbar {
+    flex-wrap: nowrap;
+    gap: 1rem;
+    padding: 1rem 2rem;
+  }
+
+  .logo-texto {
+    font-size: 1.5rem;
+  }
+
+  .btn-menu {
+    display: none;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-basis: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+    padding-top: 0;
+  }
+
+  /* El submenú cuelga del último ítem de la barra: anclado a la
+     izquierda se sale de la pantalla y agrega scroll horizontal aun
+     estando cerrado, porque sigue ocupando lugar. */
+  .submenu-contenido {
+    right: 0;
+    left: auto;
+  }
+}

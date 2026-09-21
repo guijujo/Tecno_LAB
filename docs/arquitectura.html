@@ -4973,8 +4973,65 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       svg [data-node-id], svg [data-edge-from], svg [data-detail], svg [data-detail-anchor], svg [data-legend-hit], svg { transition: none !important; }
     }
   </style>
+  <link rel="stylesheet" href="../css/style2.css">
 </head>
 <body>
+  <nav class="navbar">
+      <div class="logo">
+        <a href="../index.html">
+          <img src="../img/favicon.png" alt="Proyecto Nosotros" class="logo-icon" />
+        </a>
+        <span class="logo-texto">Registro Emocional</span>
+      </div>
+      <button
+        id="btn-menu"
+        class="btn-menu"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="menu-navegacion"
+      >
+        ☰
+      </button>
+      <ul id="menu-navegacion" class="nav-links">
+        <li>
+          <button
+            id="btn-actualizar-registros"
+            class="nav-boton"
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="actualizar-registros"
+          >
+            Actualizar Registros
+          </button>
+        </li>
+        <li><a href="#historial">Historial</a></li>
+        <li><a href="#calendario">Calendario</a></li>
+        <li><a href="#estadisticas">Estadísticas</a></li>
+        <li id="menu-descargas" class="descargas">
+          <button
+            id="btn-descargas"
+            class="nav-boton"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="dropdown-descargas"
+          >
+            Descargar Historial ▾
+          </button>
+
+          <div id="dropdown-descargas" class="submenu-contenido">
+            <button id="btn-descargar-texto" class="submenu-item" type="button">
+              Descargar
+            </button>
+            <button id="btn-descargar-pdf" class="submenu-item" type="button">
+              Descargar en PDF
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
   <!-- Toolbar: theme, live visual style, trace motion, presentation stage, and export.
        Motion appears only for trace-enabled artifacts and has no shortcut;
        Keyboard: T toggles theme, S cycles style, F toggles the stage, E opens export. -->
@@ -14990,5 +15047,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
     });
   </script>
+  <script src="../js/script.js"></script>
 </body>
 </html>
