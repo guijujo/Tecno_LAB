@@ -15,7 +15,7 @@
    no rompe nada porque los archivos igual se refrescan en segundo plano.
 */
 
-const VERSION = "v2";
+const VERSION = "v8";
 const CACHE = `registro-emocional-${VERSION}`;
 
 const RECURSOS = [
@@ -24,6 +24,7 @@ const RECURSOS = [
   "./manifest.json",
   "./css/style.css",
   "./js/script.js",
+  "./js/reportes-config.js",
   "./js/jspdf.umd.min.js",
   "./img/favicon.png",
   "./img/icono-circular.png",

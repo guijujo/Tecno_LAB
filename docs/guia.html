@@ -7,7 +7,7 @@
       name="description"
       content="Guía del taller TECNO-LAB: cómo armar un proyecto web desde cero, buenas prácticas, UI/UX, Git y GitHub, trabajo en equipo con ramas y cómo apoyarse en una IA."
     />
-    <meta name="theme-color" content="#0d1b2a" />
+    <meta name="theme-color" content="#2866ad" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="icon" type="image/png" href="../img/favicon.png" />
     <title>Guía del taller · Registro Emocional</title>
@@ -18,9 +18,13 @@
         padding: 24px;
         border: 1px solid var(--borde);
         border-radius: 12px;
-        background: linear-gradient(180deg, #ffffff, #eef9ff);
-        box-shadow: 0 14px 30px rgba(10, 25, 38, 0.08);
+        background: var(--panel-gradiente);
+        box-shadow: 0 14px 30px var(--sombra);
+        color: var(--texto);
         line-height: 1.65;
+        overflow-wrap: anywhere;
+        animation: guia-aparece 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
       }
 
       .guia h1 {
@@ -33,6 +37,7 @@
         padding-top: 18px;
         border-top: 2px solid var(--borde);
         font-size: 1.3rem;
+        scroll-margin-top: 100px;
       }
 
       .guia h3 {
@@ -67,7 +72,8 @@
         padding: 16px 20px;
         border: 1px solid var(--borde);
         border-radius: 8px;
-        background-color: #f4fbff;
+        background-color: var(--bg-panel-2);
+        transition: background-color 240ms ease, border-color 240ms ease;
       }
 
       .indice ol {
@@ -82,20 +88,26 @@
         margin-bottom: 14px;
         padding: 14px 16px;
         overflow-x: auto;
-        border: 1px solid #d8eefc;
+        border: 1px solid var(--borde);
         border-left: 4px solid var(--celeste-fuerte);
         border-radius: 6px;
-        background-color: #f7fcff;
+        background-color: var(--bg-panel-2);
+        color: var(--texto);
         font-size: 0.86rem;
         line-height: 1.55;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
       }
 
       code {
         padding: 1px 5px;
         border-radius: 4px;
-        background-color: #e6f4fd;
+        background-color: var(--fondo-hover);
+        color: var(--texto);
         font-size: 0.88em;
         overflow-wrap: anywhere;
+        transition: background-color 180ms ease, color 180ms ease;
       }
 
       pre code {
@@ -110,18 +122,20 @@
         padding: 14px 16px;
         border-radius: 6px;
         font-size: 0.95rem;
+        color: var(--texto);
+        transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
       }
 
       .idea {
-        border: 1px solid #a7f3d0;
+        border: 1px solid color-mix(in srgb, #10b981 38%, var(--borde));
         border-left: 4px solid #10b981;
-        background-color: #f0fdf7;
+        background-color: color-mix(in srgb, #10b981 9%, var(--bg-panel));
       }
 
       .ojo {
-        border: 1px solid #fcd9a4;
+        border: 1px solid color-mix(in srgb, #f59e0b 42%, var(--borde));
         border-left: 4px solid #f59e0b;
-        background-color: #fffaf0;
+        background-color: color-mix(in srgb, #f59e0b 10%, var(--bg-panel));
       }
 
       .idea strong:first-child,
@@ -136,6 +150,10 @@
         margin-bottom: 16px;
       }
 
+      .comparar > * {
+        min-width: 0;
+      }
+
       @media (min-width: 700px) {
         .comparar {
           grid-template-columns: 1fr 1fr;
@@ -144,19 +162,22 @@
 
       .mal,
       .bien {
+        min-width: 0;
         padding: 14px 16px;
         border-radius: 6px;
         font-size: 0.92rem;
+        color: var(--texto);
+        transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
       }
 
       .mal {
-        border: 1px solid #fecaca;
-        background-color: #fef2f2;
+        border: 1px solid color-mix(in srgb, #ef4444 38%, var(--borde));
+        background-color: color-mix(in srgb, #ef4444 8%, var(--bg-panel));
       }
 
       .bien {
-        border: 1px solid #a7f3d0;
-        background-color: #f0fdf7;
+        border: 1px solid color-mix(in srgb, #10b981 38%, var(--borde));
+        background-color: color-mix(in srgb, #10b981 9%, var(--bg-panel));
       }
 
       .mal p:last-child,
@@ -174,11 +195,11 @@
       }
 
       .mal .etiqueta {
-        color: #b91c1c;
+        color: color-mix(in srgb, #b91c1c 75%, var(--texto));
       }
 
       .bien .etiqueta {
-        color: #047857;
+        color: color-mix(in srgb, #047857 75%, var(--texto));
       }
 
       .volver {
@@ -187,21 +208,201 @@
         color: var(--celeste-fuerte);
         font-weight: 600;
       }
+
+      .docs-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: min(1200px, calc(100% - 24px));
+        margin: 18px auto 18px;
+        padding: 10px 16px;
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        background: var(--barra-gradiente);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 24px var(--sombra);
+        color: var(--texto-barra);
+        animation: navegacion-aparece 320ms ease-out both;
+        transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
+      }
+
+      .docs-navbar__brand a,
+      .docs-navbar__link {
+        color: var(--texto-barra);
+        text-decoration: none;
+      }
+
+      .docs-navbar__brand a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+      }
+
+      .docs-navbar__logo {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+      }
+
+      .docs-navbar__links {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .docs-navbar__link {
+        display: inline-flex;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border: 1px solid color-mix(in srgb, var(--texto-barra) 28%, transparent);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--texto-barra) 8%, transparent);
+        color: var(--texto-barra);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+      }
+
+      .docs-navbar__link:hover,
+      .docs-navbar__link:focus-visible {
+        background: color-mix(in srgb, var(--celeste) 18%, transparent);
+        border-color: var(--celeste-oscuro);
+        outline: none;
+      }
+
+      @keyframes guia-aparece {
+        from { opacity: 0; transform: translateY(9px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes navegacion-aparece {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .guia,
+        .docs-navbar {
+          animation: none;
+          transition: none;
+        }
+
+        .indice,
+        pre,
+        .docs-navbar__link {
+          transition: none;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .docs-navbar {
+          flex-wrap: wrap;
+          padding: 10px 12px;
+        }
+
+        .docs-navbar__brand a {
+          font-size: 0.8rem;
+        }
+
+        .docs-navbar__brand,
+        .docs-navbar__links {
+          width: 100%;
+        }
+
+        .docs-navbar__links {
+          justify-content: flex-start;
+          gap: 6px;
+        }
+
+        .docs-navbar__link {
+          flex: 1 1 auto;
+          padding: 7px 9px;
+          font-size: 0.8rem;
+        }
+
+        .guia {
+          margin: 18px auto;
+          padding: 18px;
+        }
+
+        .guia h1 {
+          font-size: 1.45rem;
+        }
+
+        .guia h2 {
+          font-size: 1.18rem;
+        }
+
+        pre {
+          padding: 12px;
+          font-size: 0.8rem;
+        }
+      }
     </style>
   </head>
   <body>
-    <nav class="navbar">
-      <div class="logo">
-        <a href="../index.html">
+    <nav class="docs-navbar" aria-label="Navegación de la guía">
+      <div class="docs-navbar__brand">
+        <a href="index.html">
           <img
             src="../img/favicon.png"
             alt="Proyecto Nosotros"
-            class="logo-icon"
+            class="docs-navbar__logo"
           />
+          <span>Registro Emocional</span>
         </a>
-        <span class="logo-texto">Registro Emocional</span>
+      </div>
+      <div class="docs-navbar__links">
+        <a href="index.html" class="docs-navbar__link">Inicio</a>
+        <button type="button" class="docs-navbar__link" onclick="history.back()">Atrás</button>
+        <button type="button" class="docs-navbar__link" data-theme-toggle aria-label="Cambiar tema">🌙 Oscuro</button>
       </div>
     </nav>
+
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const buttons = document.querySelectorAll('[data-theme-toggle]');
+
+        const themes = ['balanced', 'light', 'dark'];
+        const labels = {
+          balanced: '🌿 Intermedio',
+          light: '☀️ Claro',
+          dark: '🌙 Oscuro',
+        };
+
+        const setTheme = (theme) => {
+          if (!themes.includes(theme)) theme = 'balanced';
+          root.setAttribute('data-theme', theme);
+          localStorage.setItem('registro-emocional-theme', theme);
+          localStorage.setItem('archify-theme', theme === 'balanced' ? 'light' : theme);
+          buttons.forEach((button) => {
+            button.textContent = labels[theme];
+            button.setAttribute('aria-label', `Cambiar tema, actual: ${labels[theme]}`);
+          });
+        };
+
+        const savedTheme = localStorage.getItem('registro-emocional-theme') || 'balanced';
+        setTheme(savedTheme);
+
+        buttons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const currentIndex = themes.indexOf(root.getAttribute('data-theme'));
+            setTheme(themes[(currentIndex + 1) % themes.length]);
+          });
+        });
+      })();
+    </script>
 
     <main>
       <article class="guia">
@@ -584,10 +785,10 @@
 
         <h3>No dependas solo del color</h3>
         <p>
-          Nuestro calendario pinta los días de rojo a verde, pero además pone
-          una carita distinta en cada nivel. Quien no distingue bien los
-          colores lee la cara. Cuando uses color para comunicar algo, sumale
-          una segunda señal: una forma, un ícono, un texto.
+          Nuestro calendario usa el color para mostrar el promedio del día y
+          emojis para señalar las emociones registradas. Los días vacíos
+          también se pueden tocar. Cuando uses color para comunicar algo,
+          sumale una segunda señal: un ícono o un texto.
         </p>
 
         <h3>Si el JavaScript falla, que igual se vea</h3>

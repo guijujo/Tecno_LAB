@@ -8,6 +8,8 @@ const CLAVE_PRIVACIDAD = "nota_educativa_aceptada";
 const CLAVE_VISITA = "visita_guiada_vista";
 const INTENSIDAD_MIN = 0;
 const INTENSIDAD_MAX = 10;
+let problemaLecturaRegistros = null;
+let bloquearEscrituraRegistros = false;
 
 const descripcionesIntensidad = [
   "No se siente intensa",
@@ -210,11 +212,17 @@ const sugerencias = {
 const botonMenu = document.getElementById("btn-menu");
 const barraNavegacion = document.querySelector(".navbar");
 const menuNavegacion = document.getElementById("menu-navegacion");
+const fondoMenuMovil = document.getElementById("fondo-menu-movil");
 const botonActualizar = document.getElementById("btn-actualizar-registros");
 const panelActualizar = document.getElementById("actualizar-registros");
 const overlayModal = document.getElementById("modal-overlay-bg");
 const botonCerrarActualizar = document.getElementById("btn-cerrar-actualizar");
+const botonSeleccionarArchivo = document.getElementById("btn-seleccionar-archivo");
 const archivoRegistros = document.getElementById("archivo-registros");
+const selectorArchivo = document.querySelector(".selector-archivo");
+const nombreArchivoSeleccionado = document.getElementById(
+  "nombre-archivo-seleccionado",
+);
 const campoPegar = document.getElementById("registro-para-pegar");
 const botonImportar = document.getElementById("btn-importar-registro");
 
@@ -251,6 +259,21 @@ const sugerenciaIntro = document.getElementById("sugerencia-intro");
 const sugerenciaIdeas = document.getElementById("sugerencia-ideas");
 const sugerenciaAyuda = document.getElementById("sugerencia-ayuda");
 
+const panelReportarBug = document.getElementById("modal-reportar-bug");
+const botonAbrirReporteBug = document.getElementById("btn-reportar-bug");
+const botonCerrarReporteBug = document.getElementById("btn-cerrar-reportar-bug");
+const formularioReporteBug = document.getElementById("form-reportar-bug");
+const archivoReporteBug = document.getElementById("reporte-imagen");
+const nombreArchivoReporteBug = document.getElementById(
+  "reporte-imagen-nombre",
+);
+const estadoReporteBug = document.getElementById("estado-reporte-bug");
+const avisoConfigReportes = document.getElementById("aviso-config-reportes");
+const botonEnviarReporteBug = document.getElementById(
+  "btn-enviar-reporte-bug",
+);
+const MAXIMO_TAMANO_IMAGEN_REPORTE = 4 * 1024 * 1024;
+
 const botonDescargas = document.getElementById("btn-descargas");
 const dropdownDescargas = document.getElementById("dropdown-descargas");
 const botonDescargarTexto = document.getElementById("btn-descargar-texto");
@@ -272,7 +295,22 @@ const busquedaHistorial = document.getElementById("busqueda-historial");
 const campoBusquedaHistorial = document.getElementById(
   "campo-busqueda-historial",
 );
+const filtroEmocionHistorial = document.getElementById(
+  "filtro-emocion-historial",
+);
+const filtroIntensidadHistorial = document.getElementById(
+  "filtro-intensidad-historial",
+);
+const filtroFechaDesdeHistorial = document.getElementById("filtro-fecha-desde");
+const filtroFechaHastaHistorial = document.getElementById("filtro-fecha-hasta");
+const botonLimpiarFiltros = document.getElementById("btn-limpiar-filtros");
 const listaHistorial = document.getElementById("lista-historial");
+let registrosEnMemoria = [];
+const MAXIMO_REGISTROS_HISTORIAL = 3;
+const REGISTROS_POR_PAGINA_HISTORIAL = 10;
+let registrosMostradosHistorial = MAXIMO_REGISTROS_HISTORIAL;
+const MAXIMO_REGISTROS_DIA = 3;
+let registrosMostradosDia = MAXIMO_REGISTROS_DIA;
 
 const calendarioMes = document.getElementById("calendario-mes");
 const calendarioDias = document.getElementById("calendario-dias");
@@ -280,6 +318,16 @@ const calendarioLeyenda = document.getElementById("calendario-leyenda");
 const calendarioDetalle = document.getElementById("calendario-detalle");
 const botonMesAnterior = document.getElementById("btn-mes-anterior");
 const botonMesSiguiente = document.getElementById("btn-mes-siguiente");
+const botonIniciarPausa = document.getElementById("btn-iniciar-pausa");
+const etiquetaBotonIniciarPausa = document.getElementById(
+  "texto-btn-iniciar-pausa",
+);
+const botonDetenerPausa = document.getElementById("btn-detener-pausa");
+const contenedorPausa = document.getElementById("pausa-calma");
+const circuloPausa = document.getElementById("pausa-circulo");
+const cuentaPausa = document.getElementById("pausa-cuenta");
+const instruccionPausa = document.getElementById("pausa-instruccion");
+const indicadoresPausa = document.querySelectorAll(".pausa-ciclo");
 
 /* ---------------------------------------------------------------
    Almacenamiento: lectura/escritura tolerante a fallos
@@ -334,6 +382,7 @@ function leerRegistros() {
   try {
     crudo = localStorage.getItem(CLAVE_REGISTROS);
   } catch (error) {
+    informarProblemaRegistros("almacenamiento");
     return [];
   }
 
@@ -341,26 +390,61 @@ function leerRegistros() {
     return [];
   }
 
+  let datos;
   try {
-    const datos = JSON.parse(crudo);
-    if (!Array.isArray(datos)) {
-      return [];
-    }
-    return datos.map(normalizarRegistro).filter(Boolean);
+    datos = JSON.parse(crudo);
   } catch (error) {
+    informarProblemaRegistros("datos");
     return [];
+  }
+
+  if (!Array.isArray(datos)) {
+    informarProblemaRegistros("datos");
+    return [];
+  }
+
+  const normalizados = datos.map(normalizarRegistro);
+  const registros = normalizados.filter(Boolean);
+  if (registros.length !== datos.length) {
+    informarProblemaRegistros("datos");
+  }
+  return registros;
+}
+
+function informarProblemaRegistros(tipo) {
+  problemaLecturaRegistros = problemaLecturaRegistros || tipo;
+  bloquearEscrituraRegistros = true;
+  window.appSoloLectura = true;
+
+  if (window.appLista && typeof window.mostrarErrorApp === "function") {
+    window.mostrarErrorApp(problemaLecturaRegistros);
   }
 }
 
-function guardarRegistros(registros) {
+function guardarRegistros(registros, opciones = {}) {
+  if (
+    (bloquearEscrituraRegistros || window.appSoloLectura) &&
+    !opciones.permitirReemplazo
+  ) {
+    window.mostrarErrorApp?.(problemaLecturaRegistros || "almacenamiento");
+    return false;
+  }
+
   try {
     localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
+    if (opciones.permitirReemplazo) {
+      problemaLecturaRegistros = null;
+      bloquearEscrituraRegistros = false;
+      window.appSoloLectura = false;
+      window.cerrarErrorApp?.();
+    }
     return true;
   } catch (error) {
-    mostrarAviso(
-      "No se pudieron guardar los registros en este navegador.",
-      "error",
-    );
+    if (error?.name === "QuotaExceededError") {
+      informarProblemaRegistros("espacio");
+    } else {
+      informarProblemaRegistros("almacenamiento");
+    }
     return false;
   }
 }
@@ -368,16 +452,32 @@ function guardarRegistros(registros) {
 /* ---------------------------------------------------------------
    Avisos
 --------------------------------------------------------------- */
-function mostrarAviso(mensaje, tipo) {
+function ocultarAvisoPagina() {
   const aviso = document.getElementById("aviso-pagina");
-  aviso.textContent = mensaje;
-  aviso.className = `aviso-pagina aviso-${tipo}`;
+  const botonCerrar = document.getElementById("btn-cerrar-aviso-pagina");
 
   clearTimeout(mostrarAviso.temporizador);
-  mostrarAviso.temporizador = setTimeout(() => {
-    aviso.className = "aviso-pagina";
-    aviso.textContent = "";
-  }, 4000);
+  aviso.className = "aviso-pagina";
+  aviso.querySelector(".aviso-pagina-texto").textContent = "";
+  botonCerrar.hidden = true;
+  aviso.setAttribute("role", "status");
+  aviso.setAttribute("aria-live", "polite");
+}
+
+function mostrarAviso(mensaje, tipo) {
+  const aviso = document.getElementById("aviso-pagina");
+  const textoAviso = aviso.querySelector(".aviso-pagina-texto");
+  const botonCerrar = document.getElementById("btn-cerrar-aviso-pagina");
+
+  textoAviso.textContent = mensaje;
+  botonCerrar.hidden = false;
+  botonCerrar.onclick = ocultarAvisoPagina;
+  aviso.className = `aviso-pagina aviso-visible aviso-${tipo}`;
+  aviso.setAttribute("role", tipo === "error" ? "alert" : "status");
+  aviso.setAttribute("aria-live", tipo === "error" ? "assertive" : "polite");
+
+  clearTimeout(mostrarAviso.temporizador);
+  mostrarAviso.temporizador = setTimeout(ocultarAvisoPagina, 4000);
 }
 
 /* ---------------------------------------------------------------
@@ -387,16 +487,23 @@ function abrirMenuMovil(abierto) {
   barraNavegacion.classList.toggle("menu-abierto", abierto);
   botonMenu.setAttribute("aria-expanded", String(abierto));
   botonMenu.setAttribute("aria-label", abierto ? "Cerrar menú" : "Abrir menú");
+  fondoMenuMovil.hidden = !abierto;
 }
 
 botonMenu.addEventListener("click", () => {
   abrirMenuMovil(!barraNavegacion.classList.contains("menu-abierto"));
 });
 
+fondoMenuMovil.addEventListener("click", () => abrirMenuMovil(false));
+
 // Al tocar un enlace del menú en móvil, el panel debe cerrarse solo.
 menuNavegacion.querySelectorAll('a[href^="#"]').forEach((enlace) => {
   enlace.addEventListener("click", () => abrirMenuMovil(false));
 });
+
+menuNavegacion
+  .querySelector("[data-theme-toggle]")
+  .addEventListener("click", () => abrirMenuMovil(false));
 
 function mostrarDropdownDescargas(abierto) {
   dropdownDescargas.classList.toggle("mostrar-menu", abierto);
@@ -462,6 +569,109 @@ function actualizarIntensidad() {
   descripcionIntensidad.textContent = descripcionesIntensidad[valor];
   actualizarAvisoIntensidad();
 }
+
+const FASES_RESPIRACION = [
+  { nombre: "inhalar", texto: "Inhalá suavemente", segundos: 4 },
+  { nombre: "sostener", texto: "Hacé una pausa", segundos: 2 },
+  { nombre: "exhalar", texto: "Exhalá despacio", segundos: 6 },
+];
+const CICLOS_RESPIRACION = 5;
+let temporizadorRespiracion = null;
+let faseRespiracionActual = 0;
+let ciclosRespiracionCompletados = 0;
+let segundosFaseRespiracion = 0;
+
+function actualizarProgresoRespiracion() {
+  indicadoresPausa.forEach((indicador, indice) => {
+    indicador.classList.toggle(
+      "completado",
+      indice < ciclosRespiracionCompletados,
+    );
+  });
+}
+
+function mostrarFaseRespiracion() {
+  const fase = FASES_RESPIRACION[faseRespiracionActual];
+  contenedorPausa.dataset.fase = fase.nombre;
+  circuloPausa.dataset.fase = fase.nombre;
+  cuentaPausa.textContent = segundosFaseRespiracion;
+  instruccionPausa.textContent =
+    `Ciclo ${ciclosRespiracionCompletados + 1} de ${CICLOS_RESPIRACION}. ${fase.texto}.`;
+  instruccionPausa.classList.remove("fase-cambio");
+  void instruccionPausa.offsetWidth;
+  instruccionPausa.classList.add("fase-cambio");
+}
+
+function finalizarPausa(completada) {
+  const devolverFoco = document.activeElement === botonDetenerPausa;
+  window.clearInterval(temporizadorRespiracion);
+  temporizadorRespiracion = null;
+  botonIniciarPausa.disabled = false;
+  etiquetaBotonIniciarPausa.textContent = completada
+    ? "Repetir pausa"
+    : "Empezar de nuevo";
+  botonDetenerPausa.disabled = true;
+  contenedorPausa.dataset.fase = "lista";
+  circuloPausa.dataset.fase = "lista";
+  cuentaPausa.textContent = completada ? "✓" : "·";
+
+  if (completada) {
+    ciclosRespiracionCompletados = CICLOS_RESPIRACION;
+    actualizarProgresoRespiracion();
+    instruccionPausa.textContent =
+      "Pausa terminada. Gracias por regalarte este momento.";
+  } else {
+    instruccionPausa.textContent =
+      "Pausa detenida. Podés volver cuando quieras.";
+  }
+
+  if (devolverFoco) {
+    botonIniciarPausa.focus();
+  }
+}
+
+function avanzarFaseRespiracion() {
+  segundosFaseRespiracion -= 1;
+  if (segundosFaseRespiracion > 0) {
+    cuentaPausa.textContent = segundosFaseRespiracion;
+    cuentaPausa.classList.remove("cuenta-pulso");
+    void cuentaPausa.offsetWidth;
+    cuentaPausa.classList.add("cuenta-pulso");
+    return;
+  }
+
+  faseRespiracionActual += 1;
+  if (faseRespiracionActual >= FASES_RESPIRACION.length) {
+    faseRespiracionActual = 0;
+    ciclosRespiracionCompletados += 1;
+    actualizarProgresoRespiracion();
+    if (ciclosRespiracionCompletados >= CICLOS_RESPIRACION) {
+      finalizarPausa(true);
+      return;
+    }
+  }
+
+  segundosFaseRespiracion = FASES_RESPIRACION[faseRespiracionActual].segundos;
+  mostrarFaseRespiracion();
+}
+
+botonIniciarPausa.addEventListener("click", () => {
+  ciclosRespiracionCompletados = 0;
+  faseRespiracionActual = 0;
+  segundosFaseRespiracion = FASES_RESPIRACION[0].segundos;
+  actualizarProgresoRespiracion();
+  mostrarFaseRespiracion();
+  botonIniciarPausa.disabled = true;
+  etiquetaBotonIniciarPausa.textContent = "Pausa en curso";
+  botonDetenerPausa.disabled = false;
+  botonDetenerPausa.focus();
+  temporizadorRespiracion = window.setInterval(
+    avanzarFaseRespiracion,
+    1000,
+  );
+});
+
+botonDetenerPausa.addEventListener("click", () => finalizarPausa(false));
 
 // Los registros guardan la emoción con su emoji ("😢 Tristeza"), y esos
 // emojis cambiaron con el tiempo. Se busca por el nombre sin emoji ni
@@ -560,20 +770,88 @@ document.getElementById("form-emocion").addEventListener("submit", (e) => {
 /* ---------------------------------------------------------------
    Búsqueda en el historial
 --------------------------------------------------------------- */
+function reiniciarHistorialVisible() {
+  registrosMostradosHistorial = MAXIMO_REGISTROS_HISTORIAL;
+}
+
+function limpiarFiltrosHistorial() {
+  campoBusquedaHistorial.value = "";
+  filtroEmocionHistorial.value = "";
+  filtroIntensidadHistorial.value = "";
+  filtroFechaDesdeHistorial.value = "";
+  filtroFechaHastaHistorial.value = "";
+  filtroFechaDesdeHistorial.max = "";
+  filtroFechaHastaHistorial.min = "";
+}
+
+function actualizarOpcionesFiltroEmocion(registros) {
+  const seleccionActual = filtroEmocionHistorial.value;
+  const emociones = [...new Set(registros.map((registro) => registro.emocion))]
+    .filter(Boolean)
+    .sort((primera, segunda) => primera.localeCompare(segunda, "es"));
+  const opcionTodas = document.createElement("option");
+  opcionTodas.value = "";
+  opcionTodas.textContent = "Todas";
+  filtroEmocionHistorial.replaceChildren(opcionTodas);
+
+  emociones.forEach((emocion) => {
+    const opcion = document.createElement("option");
+    opcion.value = emocion;
+    opcion.textContent = emocion;
+    filtroEmocionHistorial.appendChild(opcion);
+  });
+
+  filtroEmocionHistorial.value = emociones.includes(seleccionActual)
+    ? seleccionActual
+    : "";
+}
+
+function fechaRegistroParaFiltro(fecha) {
+  const partes = partesFecha(fecha);
+  if (!partes) return "";
+
+  return `${partes.anio}-${String(partes.mes).padStart(2, "0")}-${String(partes.dia).padStart(2, "0")}`;
+}
+
 botonBuscarHistorial.addEventListener("click", () => {
   const estabaAbierta = !busquedaHistorial.hidden;
   busquedaHistorial.hidden = estabaAbierta;
   botonBuscarHistorial.setAttribute("aria-expanded", String(!estabaAbierta));
+  botonBuscarHistorial.setAttribute(
+    "aria-label",
+    estabaAbierta ? "Mostrar filtros del historial" : "Ocultar filtros del historial",
+  );
 
-  if (estabaAbierta) {
-    campoBusquedaHistorial.value = "";
-    actualizarInterfaz();
-  } else {
-    campoBusquedaHistorial.focus();
+  if (!estabaAbierta) {
+    filtroEmocionHistorial.focus();
   }
 });
 
-campoBusquedaHistorial.addEventListener("input", actualizarInterfaz);
+campoBusquedaHistorial.addEventListener("input", () => {
+  reiniciarHistorialVisible();
+  actualizarInterfaz(true);
+});
+
+[
+  filtroEmocionHistorial,
+  filtroIntensidadHistorial,
+  filtroFechaDesdeHistorial,
+  filtroFechaHastaHistorial,
+].forEach((filtro) => {
+  filtro.addEventListener("change", () => {
+    filtroFechaHastaHistorial.min = filtroFechaDesdeHistorial.value;
+    filtroFechaDesdeHistorial.max = filtroFechaHastaHistorial.value;
+    reiniciarHistorialVisible();
+    actualizarInterfaz(true);
+  });
+});
+
+botonLimpiarFiltros.addEventListener("click", () => {
+  limpiarFiltrosHistorial();
+  reiniciarHistorialVisible();
+  actualizarInterfaz(true);
+  campoBusquedaHistorial.focus();
+});
 
 /* ---------------------------------------------------------------
    Estadísticas (una sola fuente de verdad para pantalla y PDF)
@@ -619,42 +897,78 @@ function calcularEstadisticas(registros) {
 /* ---------------------------------------------------------------
    Render
 --------------------------------------------------------------- */
-function actualizarInterfaz() {
-  const registros = leerRegistros();
+function actualizarInterfaz(soloHistorial = false) {
+  const registros = soloHistorial ? registrosEnMemoria : leerRegistros();
 
-  // 1. Resumen
-  if (registros.length > 0) {
-    const ultimo = registros[0];
-    document.getElementById("resumen-fecha").textContent = ultimo.fecha;
-    document.getElementById("resumen-intensidad").textContent =
-      `${ultimo.intensidad}/10 - ${descripcionesIntensidad[ultimo.intensidad]}`;
-    document.getElementById("resumen-emocion").textContent = ultimo.emocion;
-  } else {
-    document.getElementById("resumen-fecha").innerHTML = "<i>Sin registros</i>";
-    document.getElementById("resumen-intensidad").innerHTML =
-      "<i>Sin registros</i>";
-    document.getElementById("resumen-emocion").innerHTML =
-      "<i>Sin registros</i>";
+  if (!soloHistorial) {
+    registrosEnMemoria = registros;
+
+    // 1. Resumen
+    if (registros.length > 0) {
+      const ultimo = registros[0];
+      document.getElementById("resumen-fecha").textContent = ultimo.fecha;
+      document.getElementById("resumen-intensidad").textContent =
+        `${ultimo.intensidad}/10 - ${descripcionesIntensidad[ultimo.intensidad]}`;
+      document.getElementById("resumen-emocion").textContent = ultimo.emocion;
+    } else {
+      document.getElementById("resumen-fecha").innerHTML = "<i>Sin registros</i>";
+      document.getElementById("resumen-intensidad").innerHTML =
+        "<i>Sin registros</i>";
+      document.getElementById("resumen-emocion").innerHTML =
+        "<i>Sin registros</i>";
+    }
   }
 
   // 2. Historial
   listaHistorial.innerHTML = "";
+  if (!soloHistorial) {
+    actualizarOpcionesFiltroEmocion(registros);
+  }
   const textoBusqueda = campoBusquedaHistorial.value.trim().toLowerCase();
-  const registrosFiltrados = textoBusqueda
-    ? registros.filter((registro) =>
-        [
-          registro.fecha,
-          registro.emocion,
-          registro.intensidad,
-          descripcionesIntensidad[registro.intensidad],
-          registro.observacion,
-        ].some((valor) =>
-          String(valor ?? "")
-            .toLowerCase()
-            .includes(textoBusqueda),
-        ),
-      )
-    : registros;
+  const emocionSeleccionada = filtroEmocionHistorial.value;
+  const intensidadSeleccionada = filtroIntensidadHistorial.value;
+  const fechaDesde = filtroFechaDesdeHistorial.value;
+  const fechaHasta = filtroFechaHastaHistorial.value;
+  const registrosFiltrados = registros.filter((registro) => {
+    const coincideTexto =
+      !textoBusqueda ||
+      [
+        registro.fecha,
+        registro.emocion,
+        registro.intensidad,
+        descripcionesIntensidad[registro.intensidad],
+        registro.observacion,
+      ].some((valor) =>
+        String(valor ?? "")
+          .toLowerCase()
+          .includes(textoBusqueda),
+      );
+    const coincideEmocion =
+      !emocionSeleccionada || registro.emocion === emocionSeleccionada;
+    const coincideIntensidad =
+      !intensidadSeleccionada ||
+      String(registro.intensidad) === intensidadSeleccionada;
+    const fechaRegistro = fechaRegistroParaFiltro(registro.fecha);
+    const coincideFecha =
+      (!fechaDesde && !fechaHasta) ||
+      Boolean(
+        fechaRegistro &&
+          (!fechaDesde || fechaRegistro >= fechaDesde) &&
+          (!fechaHasta || fechaRegistro <= fechaHasta),
+      );
+
+    return coincideTexto && coincideEmocion && coincideIntensidad && coincideFecha;
+  });
+  const registrosOrdenados = [...registrosFiltrados].sort((primero, segundo) => {
+    const fechaPrimero = partesFecha(primero.fecha);
+    const fechaSegundo = partesFecha(segundo.fecha);
+    if (!fechaPrimero || !fechaSegundo) return 0;
+    return (
+      fechaSegundo.anio - fechaPrimero.anio ||
+      fechaSegundo.mes - fechaPrimero.mes ||
+      fechaSegundo.dia - fechaPrimero.dia
+    );
+  });
 
   if (registros.length === 0) {
     listaHistorial.appendChild(
@@ -664,13 +978,47 @@ function actualizarInterfaz() {
     );
   } else if (registrosFiltrados.length === 0) {
     listaHistorial.appendChild(
-      crearMensajeVacio("No se encontraron registros con esa búsqueda."),
+      crearMensajeVacio("No hay registros que coincidan con esos filtros."),
     );
   }
 
-  registrosFiltrados.forEach((registro) => {
+  const registrosVisibles = registrosOrdenados.slice(
+    0,
+    registrosMostradosHistorial,
+  );
+
+  registrosVisibles.forEach((registro) => {
     listaHistorial.appendChild(crearTarjetaRegistro(registro));
   });
+
+  if (registrosFiltrados.length > registrosMostradosHistorial) {
+    const botonMostrarMas = document.createElement("button");
+    botonMostrarMas.type = "button";
+    botonMostrarMas.className = "btn-mostrar-mas";
+    botonMostrarMas.textContent = "Mostrar más";
+    botonMostrarMas.addEventListener("click", () => {
+      registrosMostradosHistorial = Math.min(
+        registrosMostradosHistorial + REGISTROS_POR_PAGINA_HISTORIAL,
+        registrosFiltrados.length,
+      );
+      actualizarInterfaz(true);
+    });
+    listaHistorial.appendChild(botonMostrarMas);
+  }
+
+  if (registrosMostradosHistorial > MAXIMO_REGISTROS_HISTORIAL) {
+    const botonMostrarMenos = document.createElement("button");
+    botonMostrarMenos.type = "button";
+    botonMostrarMenos.className = "btn-mostrar-menos";
+    botonMostrarMenos.textContent = "Mostrar menos";
+    botonMostrarMenos.addEventListener("click", () => {
+      reiniciarHistorialVisible();
+      actualizarInterfaz(true);
+    });
+    listaHistorial.appendChild(botonMostrarMenos);
+  }
+
+  if (soloHistorial) return;
 
   // 3. Estadísticas
   const { total, promedio, frecuencias, masFrecuente } =
@@ -687,7 +1035,29 @@ function actualizarInterfaz() {
   listaFrecuencias.innerHTML = "";
   frecuencias.forEach(({ emocion, porcentaje }) => {
     const elemento = document.createElement("li");
-    elemento.textContent = `${emocion}: ${porcentaje}%`;
+    elemento.className = "frecuencia-item";
+
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "frecuencia-emocion";
+    etiqueta.textContent = emocion;
+
+    const valor = document.createElement("strong");
+    valor.className = "frecuencia-porcentaje";
+    valor.textContent = `${porcentaje}%`;
+
+    const grafico = document.createElement("span");
+    grafico.className = "frecuencia-grafico";
+    grafico.setAttribute("role", "progressbar");
+    grafico.setAttribute("aria-label", `Frecuencia de ${emocion}`);
+    grafico.setAttribute("aria-valuemin", "0");
+    grafico.setAttribute("aria-valuemax", "100");
+    grafico.setAttribute("aria-valuenow", String(porcentaje));
+
+    const barra = document.createElement("span");
+    barra.className = "frecuencia-barra";
+    barra.style.width = `${porcentaje}%`;
+    grafico.appendChild(barra);
+    elemento.append(etiqueta, valor, grafico);
     listaFrecuencias.appendChild(elemento);
   });
 
@@ -783,23 +1153,49 @@ botonDescargarPdf.addEventListener("click", async () => {
   const { jsPDF } = window.jspdf;
   const documento = new jsPDF();
   const anchoPagina = documento.internal.pageSize.getWidth();
-  const margen = 20;
+  const altoPagina = documento.internal.pageSize.getHeight();
+  const margen = 18;
   const anchoUtil = anchoPagina - margen * 2;
-  const limiteInferior = 278;
-  let posicionY = 20;
+  const limiteInferior = altoPagina - 24;
+  const colorTinta = [35, 52, 69];
+  const colorSuave = [99, 116, 131];
+  const colorPrincipal = [40, 102, 173];
+  const colorFondo = [244, 248, 251];
+  let posicionY = 57;
+
+  documento.setProperties({
+    title: "Informe de registro emocional",
+    subject: "Resumen descriptivo de registros emocionales personales",
+    author: "TECNO-LAB | Proyecto Nosotros",
+    creator: "Registro Emocional Web",
+  });
+
+  const dibujarEncabezadoContinuacion = () => {
+    documento.setFillColor(...colorPrincipal);
+    documento.rect(0, 0, anchoPagina, 16, "F");
+    documento.setFont("helvetica", "bold");
+    documento.setFontSize(8);
+    documento.setTextColor(255, 255, 255);
+    documento.text("REGISTRO EMOCIONAL", margen, 10);
+    documento.setFont("helvetica", "normal");
+    documento.text("INFORME DE SEGUIMIENTO", anchoPagina - margen, 10, {
+      align: "right",
+    });
+  };
 
   const asegurarEspacio = (altoNecesario) => {
     if (posicionY + altoNecesario > limiteInferior) {
       documento.addPage();
-      posicionY = 20;
+      dibujarEncabezadoContinuacion();
+      posicionY = 27;
+      return true;
     }
+    return false;
   };
 
-  // Se mide el párrafo antes de dibujarlo para poder reservar el alto
-  // exacto de cada tarjeta y no partirla entre dos páginas.
   const prepararParrafo = (texto, opciones = {}) => {
-    const tamano = opciones.tamano || 10;
-    const interlineado = opciones.interlineado || 5;
+    const tamano = opciones.tamano || 9;
+    const interlineado = opciones.interlineado || 4.5;
     documento.setFontSize(tamano);
     documento.setFont("helvetica", opciones.negrita ? "bold" : "normal");
     const lineas = documento.splitTextToSize(limpiarTextoPDF(texto), anchoUtil);
@@ -807,102 +1203,345 @@ botonDescargarPdf.addEventListener("click", async () => {
       lineas,
       tamano,
       negrita: Boolean(opciones.negrita),
-      alto: lineas.length * interlineado + 4,
+      alto: lineas.length * interlineado + 2,
     };
   };
 
   const dibujarParrafo = (parrafo) => {
     documento.setFontSize(parrafo.tamano);
     documento.setFont("helvetica", parrafo.negrita ? "bold" : "normal");
+    documento.setTextColor(...colorTinta);
     documento.text(parrafo.lineas, margen, posicionY);
     posicionY += parrafo.alto;
   };
 
-  const agregarParrafo = (texto, opciones) => {
-    const parrafo = prepararParrafo(texto, opciones);
-    asegurarEspacio(parrafo.alto);
-    dibujarParrafo(parrafo);
-  };
-
   const logo = await cargarImagenParaPDF("img/icono-circular.png");
+  documento.setFillColor(...colorPrincipal);
+  documento.rect(0, 0, anchoPagina, 44, "F");
   if (logo) {
-    documento.addImage(logo, "PNG", margen, posicionY, 22, 22);
+    documento.addImage(logo, "PNG", margen, 10, 24, 24);
   }
   documento.setFont("helvetica", "bold");
-  documento.setFontSize(18);
-  documento.text("Registro Emocional", margen + 28, posicionY + 9);
+  documento.setFontSize(19);
+  documento.setTextColor(255, 255, 255);
+  documento.text("Registro Emocional", margen + 31, 21);
   documento.setFont("helvetica", "normal");
-  documento.setFontSize(10);
-  documento.text("TECNO-LAB | Proyecto Nosotros", margen + 28, posicionY + 16);
-  posicionY += 34;
-  documento.setDrawColor(0, 123, 255);
-  documento.line(margen, posicionY, anchoPagina - margen, posicionY);
-  posicionY += 12;
-
-  agregarParrafo(
-    `Documento generado el ${new Date().toLocaleDateString("es-AR")}`,
-    { tamano: 9 },
+  documento.setFontSize(9);
+  documento.setTextColor(225, 237, 247);
+  documento.text("TECNO-LAB | Proyecto Nosotros", margen + 31, 28);
+  documento.setFontSize(8);
+  documento.text("INFORME PERSONAL", anchoPagina - margen, 16, {
+    align: "right",
+  });
+  documento.text(
+    `Generado el ${new Date().toLocaleDateString("es-AR")}`,
+    anchoPagina - margen,
+    23,
+    { align: "right" },
   );
-  agregarParrafo("Resumen de registros", { tamano: 14, negrita: true });
+
+  documento.setFont("helvetica", "bold");
+  documento.setFontSize(13);
+  documento.setTextColor(...colorTinta);
+  documento.text("Resumen", margen, posicionY);
+  posicionY += 6;
 
   const { total, promedio, frecuencias, masFrecuente } =
     calcularEstadisticas(registros);
 
-  agregarParrafo(`Cantidad de registros: ${total}`);
-  agregarParrafo(
-    `Intensidad promedio: ${promedio}/10 - ${descripcionesIntensidad[promedio]}`,
-  );
-  agregarParrafo(`Emoción más frecuente: ${masFrecuente}`);
-  agregarParrafo("Frecuencia por emoción", { negrita: true });
-  frecuencias.forEach(({ emocion, cantidad, porcentaje }) => {
-    agregarParrafo(
-      `${emocion}: ${porcentaje}% (${cantidad} registro${cantidad === 1 ? "" : "s"})`,
+  const separacionTarjetas = 4;
+  const anchoTarjeta = (anchoUtil - separacionTarjetas * 2) / 3;
+  const tarjetasResumen = [
+    {
+      titulo: "REGISTROS",
+      valor: String(total),
+      detalle: total === 1 ? "registro guardado" : "registros guardados",
+    },
+    {
+      titulo: "INTENSIDAD PROMEDIO",
+      valor: `${promedio}/10`,
+      detalle: descripcionesIntensidad[promedio],
+    },
+    {
+      titulo: "EMOCIÓN MÁS FRECUENTE",
+      valor: limpiarTextoPDF(masFrecuente),
+      detalle: "según lo registrado",
+    },
+  ];
+  const tarjetasResumenPreparadas = tarjetasResumen.map((tarjeta, indice) => {
+    const tamanoValor = indice === 2 ? 9 : 16;
+    documento.setFont("helvetica", "bold");
+    documento.setFontSize(tamanoValor);
+    const lineasValor = documento.splitTextToSize(
+      tarjeta.valor,
+      anchoTarjeta - 11,
     );
+    const yDetalle = Math.max(24, 14 + lineasValor.length * 4.2 + 2);
+    return { ...tarjeta, tamanoValor, lineasValor, yDetalle };
   });
-  agregarParrafo("Detalle de registros", { tamano: 14, negrita: true });
+  const altoTarjetaResumen = Math.max(
+    29,
+    ...tarjetasResumenPreparadas.map((tarjeta) => tarjeta.yDetalle + 5),
+  );
 
-  registros.forEach((registro, indice) => {
-    const partes = [
-      prepararParrafo(`${indice + 1}. ${registro.emocion} | ${registro.fecha}`, {
-        negrita: true,
-      }),
-      prepararParrafo(
-        `Intensidad: ${registro.intensidad}/10 - ${descripcionesIntensidad[registro.intensidad]}`,
-      ),
-      prepararParrafo(
-        `Observación: ${registro.observacion || "Sin observación"}`,
-      ),
-    ];
-
-    const altoTarjeta = partes.reduce((suma, parte) => suma + parte.alto, 0) + 6;
-    asegurarEspacio(altoTarjeta + 4);
-
-    documento.setFillColor(248, 250, 252);
+  tarjetasResumenPreparadas.forEach((tarjeta, indice) => {
+    const x = margen + indice * (anchoTarjeta + separacionTarjetas);
+    documento.setFillColor(...colorFondo);
     documento.roundedRect(
-      margen - 4,
-      posicionY - 6,
-      anchoUtil + 8,
-      altoTarjeta,
+      x,
+      posicionY,
+      anchoTarjeta,
+      altoTarjetaResumen,
       2,
       2,
       "F",
     );
-    partes.forEach(dibujarParrafo);
-    posicionY += 6;
+    documento.setFillColor(...colorPrincipal);
+    documento.roundedRect(x, posicionY, 2, altoTarjetaResumen, 1, 1, "F");
+    documento.setFont("helvetica", "bold");
+    documento.setFontSize(7);
+    documento.setTextColor(...colorSuave);
+    documento.text(tarjeta.titulo, x + 6, posicionY + 6);
+    documento.setFontSize(tarjeta.tamanoValor);
+    documento.setTextColor(...colorTinta);
+    documento.text(tarjeta.lineasValor, x + 6, posicionY + 14);
+    documento.setFont("helvetica", "normal");
+    documento.setFontSize(7);
+    documento.setTextColor(...colorSuave);
+    documento.text(tarjeta.detalle, x + 6, posicionY + tarjeta.yDetalle);
+  });
+  posicionY += altoTarjetaResumen + 9;
+
+  const agregarTituloSeccion = (titulo) => {
+    asegurarEspacio(13);
+    documento.setFont("helvetica", "bold");
+    documento.setFontSize(12);
+    documento.setTextColor(...colorTinta);
+    documento.text(titulo, margen, posicionY);
+    posicionY += 3;
+    documento.setDrawColor(218, 227, 235);
+    documento.setLineWidth(0.35);
+    documento.line(margen, posicionY, anchoPagina - margen, posicionY);
+    posicionY += 7;
+  };
+
+  agregarTituloSeccion("Frecuencia por emoción");
+  frecuencias.forEach(({ emocion, cantidad, porcentaje }) => {
+    const lineasNombre = documento.splitTextToSize(
+      limpiarTextoPDF(emocion),
+      61,
+    );
+    const altoFila = Math.max(8, lineasNombre.length * 4 + 2);
+    asegurarEspacio(altoFila);
+    documento.setFont("helvetica", "normal");
+    documento.setFontSize(8);
+    documento.setTextColor(...colorTinta);
+    documento.text(lineasNombre, margen, posicionY + 3);
+
+    const xBarra = margen + 67;
+    const anchoBarra = anchoUtil - 105;
+    const yBarra = posicionY + 1;
+    documento.setFillColor(231, 238, 244);
+    documento.roundedRect(xBarra, yBarra, anchoBarra, 3, 1.5, 1.5, "F");
+    if (porcentaje > 0) {
+      documento.setFillColor(...colorPrincipal);
+      documento.roundedRect(
+        xBarra,
+        yBarra,
+        Math.max(1, (anchoBarra * porcentaje) / 100),
+        3,
+        1.5,
+        1.5,
+        "F",
+      );
+    }
+    documento.setFont("helvetica", "bold");
+    documento.setTextColor(...colorSuave);
+    documento.text(
+      `${porcentaje}% | ${cantidad}`,
+      anchoPagina - margen,
+      posicionY + 3,
+      { align: "right" },
+    );
+    posicionY += altoFila;
   });
 
-  agregarParrafo("Avisos y privacidad", { tamano: 14, negrita: true });
-  agregarParrafo(
-    "Este proyecto guarda los registros de forma local en este navegador. El archivo se genera como práctica educativa para poder compartirlo con un profesional o recuperarlo mediante “Actualizar Registros”.",
-  );
-  agregarParrafo(
-    "IMPORTANTE: Este proyecto no reemplaza el acompañamiento de una persona adulta o profesional. Tus registros son privados.",
-  );
-  agregarParrafo("Registro Emocional Web | TECNO-LAB | Proyecto Nosotros", {
-    tamano: 9,
+  posicionY += 3;
+  agregarTituloSeccion("Detalle de registros");
+
+  const registrosPorPeriodo = new Map();
+  const registrosOrdenados = [...registros].sort((primero, segundo) => {
+    const fechaPrimero = partesFecha(primero.fecha);
+    const fechaSegundo = partesFecha(segundo.fecha);
+    if (!fechaPrimero || !fechaSegundo) {
+      return fechaPrimero ? -1 : fechaSegundo ? 1 : 0;
+    }
+    return (
+      fechaSegundo.anio - fechaPrimero.anio ||
+      fechaSegundo.mes - fechaPrimero.mes ||
+      fechaSegundo.dia - fechaPrimero.dia
+    );
   });
 
-  documento.save(`registro-emocional-completo-${fechaISO()}.pdf`);
+  registrosOrdenados.forEach((registro) => {
+    const fecha = partesFecha(registro.fecha);
+    const clavePeriodo = fecha
+      ? `${fecha.anio}-${String(fecha.mes).padStart(2, "0")}`
+      : "fechas-sin-clasificar";
+    if (!registrosPorPeriodo.has(clavePeriodo)) {
+      registrosPorPeriodo.set(clavePeriodo, {
+        fecha,
+        registros: [],
+      });
+    }
+    registrosPorPeriodo.get(clavePeriodo).registros.push(registro);
+  });
+
+  let indiceRegistro = 0;
+  registrosPorPeriodo.forEach((grupo) => {
+    const cantidad = grupo.registros.length;
+    const intensidadPromedio = Math.round(
+      grupo.registros.reduce((suma, registro) => suma + registro.intensidad, 0) /
+        cantidad,
+    );
+    const periodo = grupo.fecha
+      ? new Intl.DateTimeFormat("es-AR", {
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(new Date(Date.UTC(grupo.fecha.anio, grupo.fecha.mes - 1, 1)))
+      : "Fechas sin clasificar";
+    const tituloPeriodo =
+      periodo.charAt(0).toLocaleUpperCase("es-AR") + periodo.slice(1);
+
+    grupo.registros.forEach((registro, indiceEnGrupo) => {
+      const xContenido = margen + 7;
+      const anchoContenido = anchoUtil - 14;
+      const tituloRegistro = documento.splitTextToSize(
+        limpiarTextoPDF(`${indiceRegistro + 1}. ${registro.emocion}`),
+        anchoContenido - 34,
+      );
+      const detalleIntensidad = documento.splitTextToSize(
+        limpiarTextoPDF(
+          `Intensidad ${registro.intensidad}/10 - ${descripcionesIntensidad[registro.intensidad]}`,
+        ),
+        anchoContenido,
+      );
+      const observacion = documento.splitTextToSize(
+        limpiarTextoPDF(
+          `Observación: ${registro.observacion || "Sin observación"}`,
+        ),
+        anchoContenido,
+      );
+      const altoCabecera = Math.max(5, tituloRegistro.length * 4.5);
+      const altoTarjeta =
+        altoCabecera +
+        detalleIntensidad.length * 4.2 +
+        observacion.length * 4.2 +
+        12;
+      const nuevaPagina = asegurarEspacio(altoTarjeta + 17);
+
+      if (indiceEnGrupo === 0 || nuevaPagina) {
+        documento.setFillColor(...colorFondo);
+        documento.roundedRect(margen, posicionY, anchoUtil, 11, 2, 2, "F");
+        documento.setFont("helvetica", "bold");
+        documento.setFontSize(8);
+        documento.setTextColor(...colorTinta);
+        documento.text(
+          nuevaPagina && indiceEnGrupo > 0
+            ? `${tituloPeriodo} (continuación)`
+            : tituloPeriodo,
+          margen + 5,
+          posicionY + 4.5,
+        );
+        documento.setFont("helvetica", "normal");
+        documento.setFontSize(7);
+        documento.setTextColor(...colorSuave);
+        documento.text(
+          `${cantidad} ${cantidad === 1 ? "registro" : "registros"} · promedio ${intensidadPromedio}/10`,
+          anchoPagina - margen - 5,
+          posicionY + 4.5,
+          { align: "right" },
+        );
+        posicionY += 14;
+      }
+
+      documento.setFillColor(...colorFondo);
+      documento.setDrawColor(224, 232, 239);
+      documento.setLineWidth(0.25);
+      documento.roundedRect(
+        margen,
+        posicionY,
+        anchoUtil,
+        altoTarjeta,
+        2,
+        2,
+        "FD",
+      );
+      documento.setFillColor(...colorPrincipal);
+      documento.roundedRect(margen, posicionY, 2, altoTarjeta, 1, 1, "F");
+      documento.setFont("helvetica", "bold");
+      documento.setFontSize(9);
+      documento.setTextColor(...colorTinta);
+      documento.text(tituloRegistro, xContenido, posicionY + 7);
+      documento.setFont("helvetica", "normal");
+      documento.setFontSize(8);
+      documento.setTextColor(...colorSuave);
+      documento.text(
+        limpiarTextoPDF(registro.fecha),
+        anchoPagina - margen - 5,
+        posicionY + 7,
+        { align: "right" },
+      );
+      let yTexto = posicionY + 13;
+      documento.setFontSize(8);
+      documento.setTextColor(...colorTinta);
+      documento.text(detalleIntensidad, xContenido, yTexto);
+      yTexto += detalleIntensidad.length * 4.2 + 1;
+      documento.setTextColor(...colorSuave);
+      documento.text(observacion, xContenido, yTexto);
+      posicionY += altoTarjeta + 4;
+      indiceRegistro += 1;
+    });
+  });
+
+  agregarTituloSeccion("Información importante");
+  const aviso = prepararParrafo(
+    "Este informe presenta un resumen descriptivo de los datos anotados y no constituye una evaluación ni un diagnóstico clínico.",
+    { tamano: 8, interlineado: 4 },
+  );
+  const privacidad = prepararParrafo(
+    "Tus registros se guardan en este dispositivo. Al descargar o compartir este archivo, vos decidís con quién hacerlo.",
+    { tamano: 8, interlineado: 4 },
+  );
+  const altoAviso = aviso.alto + privacidad.alto + 8;
+  asegurarEspacio(altoAviso);
+  documento.setFillColor(240, 246, 250);
+  documento.roundedRect(margen, posicionY, anchoUtil, altoAviso, 2, 2, "F");
+  posicionY += 5;
+  dibujarParrafo(aviso);
+  dibujarParrafo(privacidad);
+  posicionY += 3;
+
+  const cantidadPaginas = documento.internal.getNumberOfPages();
+  for (let pagina = 1; pagina <= cantidadPaginas; pagina += 1) {
+    documento.setPage(pagina);
+    documento.setDrawColor(218, 227, 235);
+    documento.setLineWidth(0.3);
+    documento.line(margen, altoPagina - 17, anchoPagina - margen, altoPagina - 17);
+    documento.setFont("helvetica", "normal");
+    documento.setFontSize(8);
+    documento.setTextColor(...colorSuave);
+    documento.text("TECNO-LAB | Proyecto Nosotros", margen, altoPagina - 10);
+    documento.text(
+      `Página ${pagina} de ${cantidadPaginas}`,
+      anchoPagina - margen,
+      altoPagina - 10,
+      { align: "right" },
+    );
+  }
+
+  documento.save(`informe-emocional-${fechaISO()}.pdf`);
   mostrarAviso("Documento PDF descargado correctamente.", "exito");
 });
 
@@ -953,8 +1592,13 @@ function abrirModalActualizar() {
 
 // Con aria-modal="true" el foco no debe poder salir del diálogo.
 function atraparFoco(e, panel) {
-  const focuseables = panel.querySelectorAll(
+  const focuseables = [...panel.querySelectorAll(
     'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])',
+  )].filter(
+    (elemento) =>
+      !elemento.disabled &&
+      !elemento.hidden &&
+      elemento.getClientRects().length > 0,
   );
   if (focuseables.length === 0) {
     return;
@@ -984,6 +1628,9 @@ function modalAbierto() {
   if (modoPrivacidad) {
     return panelPrivacidad;
   }
+  if (panelReportarBug.classList.contains("modal-visible")) {
+    return panelReportarBug;
+  }
   if (panelBorrar.classList.contains("modal-visible")) {
     return panelBorrar;
   }
@@ -1009,8 +1656,259 @@ function cerrarModal(panel) {
     cerrarModalActualizar();
   } else if (panel === panelSugerencia) {
     cerrarModalSugerencia();
+  } else if (panel === panelReportarBug) {
+    cerrarModalReportarBug();
   }
 }
+
+let focoPrevioReporteBug = null;
+
+function mostrarEstadoReporte(texto, tipo = "") {
+  estadoReporteBug.textContent = texto;
+  estadoReporteBug.className = `estado-reporte-bug${tipo ? ` estado-${tipo}` : ""}`;
+  estadoReporteBug.hidden = false;
+}
+
+function abrirModalReportarBug() {
+  focoPrevioReporteBug =
+    document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : botonAbrirReporteBug;
+  estadoReporteBug.hidden = true;
+  estadoReporteBug.textContent = "";
+  estadoReporteBug.className = "estado-reporte-bug";
+  abrirMenuMovil(false);
+  avisoConfigReportes.hidden = Boolean(
+    typeof window.URL_SERVICIO_REPORTES === "string" &&
+      window.URL_SERVICIO_REPORTES.trim(),
+  );
+  panelReportarBug.classList.add("modal-visible");
+  panelReportarBug.setAttribute("aria-hidden", "false");
+  overlayModal.hidden = false;
+  botonAbrirReporteBug.setAttribute("aria-expanded", "true");
+  void panelReportarBug.offsetHeight;
+  document.getElementById("reporte-tipo").focus();
+}
+
+function cerrarModalReportarBug() {
+  panelReportarBug.classList.remove("modal-visible");
+  panelReportarBug.setAttribute("aria-hidden", "true");
+  overlayModal.hidden = true;
+  botonAbrirReporteBug.setAttribute("aria-expanded", "false");
+  focoPrevioReporteBug?.focus();
+  focoPrevioReporteBug = null;
+}
+
+botonAbrirReporteBug.addEventListener("click", abrirModalReportarBug);
+botonCerrarReporteBug.addEventListener("click", cerrarModalReportarBug);
+
+archivoReporteBug.addEventListener("change", () => {
+  const archivo = archivoReporteBug.files[0];
+  if (!archivo) {
+    nombreArchivoReporteBug.textContent =
+      "La imagen es obligatoria para enviar el reporte.";
+    return;
+  }
+  nombreArchivoReporteBug.textContent =
+    `${archivo.name} · ${(archivo.size / (1024 * 1024)).toFixed(2)} MB`;
+});
+
+function leerImagenReporte(archivo) {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.addEventListener("load", () => {
+      const contenido = String(lector.result || "");
+      const separador = contenido.indexOf(",");
+      if (separador < 0) {
+        reject(new Error("No se pudo leer la imagen seleccionada."));
+        return;
+      }
+      resolve(contenido.slice(separador + 1));
+    });
+    lector.addEventListener("error", () => {
+      reject(new Error("No se pudo leer la imagen seleccionada."));
+    });
+    lector.readAsDataURL(archivo);
+  });
+}
+
+function obtenerIdDispositivoReportes() {
+  const clave = "reporte-bugs-id-dispositivo";
+  let id = localStorage.getItem(clave);
+  if (id) {
+    return id;
+  }
+  if (!window.crypto?.randomUUID) {
+    throw new Error("Este navegador no permite crear un identificador seguro.");
+  }
+  id = window.crypto.randomUUID();
+  localStorage.setItem(clave, id);
+  return id;
+}
+
+function consultarEstadoReporte(endpoint, requestId) {
+  return new Promise((resolve, reject) => {
+    const callback = `recibirReporte_${window.crypto.randomUUID().replaceAll("-", "")}`;
+    const script = document.createElement("script");
+    const temporizador = window.setTimeout(() => {
+      delete window[callback];
+      script.remove();
+      reject(new Error("Se agotó el tiempo esperando la confirmación."));
+    }, 12000);
+
+    window[callback] = (respuesta) => {
+      window.clearTimeout(temporizador);
+      delete window[callback];
+      script.remove();
+      resolve(respuesta);
+    };
+    script.onerror = () => {
+      window.clearTimeout(temporizador);
+      delete window[callback];
+      script.remove();
+      reject(new Error("No se pudo consultar el estado del reporte."));
+    };
+    const separador = endpoint.includes("?") ? "&" : "?";
+    script.src =
+      `${endpoint}${separador}action=status` +
+      `&requestId=${encodeURIComponent(requestId)}` +
+      `&callback=${encodeURIComponent(callback)}&_=${Date.now()}`;
+    document.head.appendChild(script);
+  });
+}
+
+async function esperarConfirmacionReporte(endpoint, requestId) {
+  const limite = Date.now() + 45000;
+  while (Date.now() < limite) {
+    const respuesta = await consultarEstadoReporte(endpoint, requestId);
+    if (respuesta.status !== "pending") {
+      return respuesta;
+    }
+    await new Promise((resolve) => window.setTimeout(resolve, 1200));
+  }
+  throw new Error("El envío tardó demasiado y no se pudo confirmar.");
+}
+
+formularioReporteBug.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  if (botonEnviarReporteBug.disabled) {
+    return;
+  }
+
+  const endpoint = window.URL_SERVICIO_REPORTES;
+  if (typeof endpoint !== "string" || !endpoint.trim()) {
+    mostrarEstadoReporte(
+      "El servicio todavía no está configurado. El reporte no se envió.",
+      "error",
+    );
+    return;
+  }
+
+  let endpointSeguro;
+  try {
+    endpointSeguro = new URL(endpoint);
+  } catch (error) {
+    mostrarEstadoReporte("La URL del servicio de reportes no es válida.", "error");
+    return;
+  }
+  if (
+    endpointSeguro.protocol !== "https:" ||
+    endpointSeguro.origin !== "https://script.google.com"
+  ) {
+    mostrarEstadoReporte(
+      "La URL configurada no es un servicio seguro de Google Apps Script.",
+      "error",
+    );
+    return;
+  }
+
+  const archivo = archivoReporteBug.files[0];
+  if (!archivo) {
+    mostrarEstadoReporte("Seleccioná una imagen antes de enviar.", "error");
+    archivoReporteBug.focus();
+    return;
+  }
+  if (!["image/png", "image/jpeg", "image/webp"].includes(archivo.type)) {
+    mostrarEstadoReporte("La imagen debe ser PNG, JPG o WebP.", "error");
+    archivoReporteBug.focus();
+    return;
+  }
+  if (archivo.size > MAXIMO_TAMANO_IMAGEN_REPORTE) {
+    mostrarEstadoReporte("La imagen supera el máximo permitido de 4 MB.", "error");
+    archivoReporteBug.focus();
+    return;
+  }
+
+  botonEnviarReporteBug.disabled = true;
+  formularioReporteBug.setAttribute("aria-busy", "true");
+  mostrarEstadoReporte("Preparando la imagen y enviando el reporte…");
+
+  try {
+    const datos = new FormData(formularioReporteBug);
+    const requestId = window.crypto.randomUUID();
+    const payload = {
+      requestId,
+      deviceId: obtenerIdDispositivoReportes(),
+      type: String(datos.get("type") || ""),
+      description: String(datos.get("description") || "").trim(),
+      steps: String(datos.get("steps") || "").trim(),
+      expected: String(datos.get("expected") || "").trim(),
+      website: String(datos.get("website") || "").trim(),
+      consent: datos.get("consent") === "on",
+      page: `${location.origin}${location.pathname}${location.hash}`.slice(0, 500),
+      browser: navigator.userAgent.slice(0, 300),
+      image: {
+        mimeType: archivo.type,
+        base64: await leerImagenReporte(archivo),
+      },
+    };
+
+    await fetch(endpointSeguro.href, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify(payload),
+    });
+
+    const resultado = await esperarConfirmacionReporte(
+      endpointSeguro.href,
+      requestId,
+    );
+    if (resultado.status === "sent") {
+      formularioReporteBug.reset();
+      nombreArchivoReporteBug.textContent =
+        "La imagen es obligatoria para enviar el reporte.";
+      mostrarEstadoReporte(
+        `Reporte enviado correctamente. Llevás ${resultado.count} de 3 reportes permitidos hoy en este navegador.`,
+        "exito",
+      );
+    } else if (resultado.status === "limit") {
+      mostrarEstadoReporte(
+        "Ya alcanzaste el límite de 3 reportes de hoy en este navegador. Podés volver a enviar mañana.",
+        "error",
+      );
+    } else if (resultado.status === "invalid") {
+      mostrarEstadoReporte(
+        "Revisá los datos: falta información o la imagen no es válida.",
+        "error",
+      );
+    } else {
+      mostrarEstadoReporte(
+        "El servicio no pudo enviar el reporte. Probá más tarde; no se confirmó ningún envío.",
+        "error",
+      );
+    }
+  } catch (error) {
+    console.error("No se pudo enviar el reporte de error:", error);
+    mostrarEstadoReporte(
+      "No se pudo confirmar el envío. Revisá tu conexión y volvé a intentarlo.",
+      "error",
+    );
+  } finally {
+    botonEnviarReporteBug.disabled = false;
+    formularioReporteBug.removeAttribute("aria-busy");
+  }
+});
 
 /* ---------------------------------------------------------------
    Borrar todos los datos
@@ -1059,13 +1957,19 @@ function borrarTodosLosDatos() {
     return;
   }
 
+  problemaLecturaRegistros = null;
+  bloquearEscrituraRegistros = false;
+  window.appSoloLectura = false;
+  window.cerrarErrorApp?.();
+
   cerrarModalBorrar();
 
   // Se deja la interfaz como recién llegada: sin búsqueda abierta, sin
   // día seleccionado y con el calendario de vuelta en el mes actual.
-  campoBusquedaHistorial.value = "";
+  limpiarFiltrosHistorial();
   busquedaHistorial.hidden = true;
   botonBuscarHistorial.setAttribute("aria-expanded", "false");
+  botonBuscarHistorial.setAttribute("aria-label", "Mostrar filtros del historial");
   diaSeleccionado = null;
   mesVisible = null;
 
@@ -1186,11 +2090,33 @@ document.addEventListener("keydown", (e) => {
   abrirMenuMovil(false);
 });
 
-archivoRegistros.addEventListener("change", () => {
-  const archivo = archivoRegistros.files[0];
+function actualizarEtiquetaArchivo(archivo) {
+  if (!nombreArchivoSeleccionado) {
+    return;
+  }
+
+  if (!archivo) {
+    nombreArchivoSeleccionado.textContent = "Ningún archivo seleccionado";
+    nombreArchivoSeleccionado.classList.remove("activo");
+    if (selectorArchivo) {
+      selectorArchivo.classList.remove("archivo-cargado");
+    }
+    return;
+  }
+
+  nombreArchivoSeleccionado.textContent = archivo.name;
+  nombreArchivoSeleccionado.classList.add("activo");
+  if (selectorArchivo) {
+    selectorArchivo.classList.add("archivo-cargado");
+  }
+}
+
+function manejarArchivoSeleccionado(archivo) {
   if (!archivo) {
     return;
   }
+
+  actualizarEtiquetaArchivo(archivo);
 
   const lector = new FileReader();
   lector.addEventListener("load", (e) => {
@@ -1200,6 +2126,35 @@ archivoRegistros.addEventListener("change", () => {
     mostrarAviso("No se pudo leer el archivo seleccionado.", "error");
   });
   lector.readAsText(archivo);
+}
+
+if (selectorArchivo) {
+  botonSeleccionarArchivo.addEventListener("click", () => {
+    archivoRegistros.click();
+  });
+
+  selectorArchivo.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    selectorArchivo.classList.add("dragover");
+  });
+
+  selectorArchivo.addEventListener("dragleave", (event) => {
+    if (event.relatedTarget && selectorArchivo.contains(event.relatedTarget)) {
+      return;
+    }
+    selectorArchivo.classList.remove("dragover");
+  });
+
+  selectorArchivo.addEventListener("drop", (event) => {
+    event.preventDefault();
+    selectorArchivo.classList.remove("dragover");
+    manejarArchivoSeleccionado(event.dataTransfer?.files?.[0]);
+  });
+
+}
+
+archivoRegistros.addEventListener("change", () => {
+  manejarArchivoSeleccionado(archivoRegistros.files[0]);
 });
 
 botonImportar.addEventListener("click", () => {
@@ -1239,13 +2194,14 @@ botonImportar.addEventListener("click", () => {
     return;
   }
 
-  if (!guardarRegistros(registrosValidados)) {
+  if (!guardarRegistros(registrosValidados, { permitirReemplazo: true })) {
     return;
   }
 
   campoPegar.value = "";
   // Se limpia para poder volver a elegir el mismo archivo.
   archivoRegistros.value = "";
+  actualizarEtiquetaArchivo(null);
   actualizarInterfaz();
   mostrarAviso(
     `Se actualizaron ${registrosValidados.length} registro${
@@ -1545,9 +2501,14 @@ function renderCalendario() {
   }
   calendarioDias.appendChild(fila);
 
-  // Si el día abierto ya no está a la vista, se cierra el detalle.
-  if (diaSeleccionado && !dias.has(diaSeleccionado)) {
-    diaSeleccionado = null;
+  // Cierra el detalle solo cuando se navega a otro mes.
+  if (diaSeleccionado) {
+    const [anioSeleccionado, mesSeleccionado] = diaSeleccionado
+      .split("-")
+      .map(Number);
+    if (anioSeleccionado !== anio || mesSeleccionado !== mes) {
+      diaSeleccionado = null;
+    }
   }
   renderDetalleDia(dias);
 }
@@ -1558,12 +2519,27 @@ function crearCeldaDia(dia, clave, dato, claveHoy) {
   numero.textContent = dia;
 
   if (!dato) {
-    const vacio = document.createElement("span");
+    const vacio = document.createElement("button");
+    vacio.type = "button";
     vacio.className = "dia-calendario dia-sin-registros";
+    vacio.dataset.dia = clave;
+    vacio.setAttribute(
+      "aria-label",
+      `${dia} de ${NOMBRES_MES[Number(clave.slice(5, 7)) - 1]}: sin registros`,
+    );
     if (clave === claveHoy) {
       vacio.classList.add("dia-hoy");
     }
+    if (clave === diaSeleccionado) {
+      vacio.classList.add("dia-seleccionado");
+      vacio.setAttribute("aria-current", "true");
+    }
+    const marcaVacia = document.createElement("span");
+    marcaVacia.className = "dia-vacio-marca";
+    marcaVacia.setAttribute("aria-hidden", "true");
+    marcaVacia.textContent = "·";
     vacio.appendChild(numero);
+    vacio.appendChild(marcaVacia);
     return vacio;
   }
 
@@ -1574,17 +2550,26 @@ function crearCeldaDia(dia, clave, dato, claveHoy) {
 
   const cantidad = dato.registros.length;
   const plural = cantidad === 1 ? "registro" : "registros";
+  const emociones = [
+    ...new Map(
+      dato.registros.map((registro) => [
+        claveEmocion(registro.emocion),
+        registro.emocion,
+      ]),
+    ).values(),
+  ];
+  const textoEmociones = emociones.join(", ");
 
   if (dato.nivel) {
     boton.classList.add(`nivel-${dato.nivel.clave}`);
     boton.setAttribute(
       "aria-label",
-      `${dia} de ${NOMBRES_MES[dato.mes - 1]}: ${dato.nivel.texto}, ${cantidad} ${plural}`,
+      `${dia} de ${NOMBRES_MES[dato.mes - 1]}: ${dato.nivel.texto}, ${cantidad} ${plural}. Emociones: ${textoEmociones}`,
     );
   } else {
     boton.setAttribute(
       "aria-label",
-      `${dia} de ${NOMBRES_MES[dato.mes - 1]}: ${cantidad} ${plural}`,
+      `${dia} de ${NOMBRES_MES[dato.mes - 1]}: ${cantidad} ${plural}. Emociones: ${textoEmociones}`,
     );
   }
 
@@ -1596,12 +2581,23 @@ function crearCeldaDia(dia, clave, dato, claveHoy) {
     boton.setAttribute("aria-current", "true");
   }
 
-  const cara = document.createElement("span");
-  cara.className = "dia-cara";
-  cara.setAttribute("aria-hidden", "true");
-  cara.textContent = dato.nivel ? dato.nivel.cara : "·";
+  const emocionesDia = document.createElement("span");
+  emocionesDia.className = "dia-emociones";
+  emocionesDia.setAttribute("aria-hidden", "true");
+  emociones.slice(0, 3).forEach((emocion) => {
+    const icono = document.createElement("span");
+    icono.className = "dia-emocion";
+    icono.textContent = emocion.trim().split(/\s+/)[0] || "•";
+    emocionesDia.appendChild(icono);
+  });
+  if (emociones.length > 3) {
+    const restantes = document.createElement("span");
+    restantes.className = "dia-emociones-mas";
+    restantes.textContent = `+${emociones.length - 3}`;
+    emocionesDia.appendChild(restantes);
+  }
 
-  boton.append(numero, cara);
+  boton.append(numero, emocionesDia);
   return boton;
 }
 
@@ -1613,14 +2609,18 @@ function renderDetalleDia(dias) {
   }
 
   const dato = dias.get(diaSeleccionado);
-  if (!dato) {
-    return;
-  }
-
   const [anio, mes, dia] = diaSeleccionado.split("-");
   const titulo = document.createElement("p");
   titulo.className = "detalle-titulo";
   titulo.textContent = `${Number(dia)} de ${NOMBRES_MES[Number(mes) - 1]} de ${anio}`;
+
+  if (!dato) {
+    const vacio = document.createElement("p");
+    vacio.className = "calendario-sin-registros";
+    vacio.textContent = "Todavía no hay registros para este día.";
+    calendarioDetalle.append(titulo, vacio);
+    return;
+  }
 
   if (dato.nivel) {
     const promedio = document.createElement("span");
@@ -1631,11 +2631,35 @@ function renderDetalleDia(dias) {
 
   const lista = document.createElement("div");
   lista.className = "lista-registros";
-  dato.registros.forEach((registro) => {
+  dato.registros.slice(0, registrosMostradosDia).forEach((registro) => {
     lista.appendChild(crearTarjetaRegistro(registro));
   });
 
   calendarioDetalle.append(titulo, lista);
+  if (dato.registros.length > registrosMostradosDia) {
+    const botonMostrarMas = document.createElement("button");
+    botonMostrarMas.type = "button";
+    botonMostrarMas.className = "btn-mostrar-mas";
+    botonMostrarMas.textContent = "Mostrar más registros";
+    botonMostrarMas.addEventListener("click", () => {
+      registrosMostradosDia = Math.min(
+        registrosMostradosDia + MAXIMO_REGISTROS_DIA,
+        dato.registros.length,
+      );
+      renderDetalleDia(dias);
+    });
+    calendarioDetalle.appendChild(botonMostrarMas);
+  } else if (registrosMostradosDia > MAXIMO_REGISTROS_DIA) {
+    const botonMostrarMenos = document.createElement("button");
+    botonMostrarMenos.type = "button";
+    botonMostrarMenos.className = "btn-mostrar-menos";
+    botonMostrarMenos.textContent = "Mostrar menos";
+    botonMostrarMenos.addEventListener("click", () => {
+      registrosMostradosDia = MAXIMO_REGISTROS_DIA;
+      renderDetalleDia(dias);
+    });
+    calendarioDetalle.appendChild(botonMostrarMenos);
+  }
 }
 
 calendarioDias.addEventListener("click", (evento) => {
@@ -1649,6 +2673,7 @@ calendarioDias.addEventListener("click", (evento) => {
 
   const clave = boton.dataset.dia;
   diaSeleccionado = clave === diaSeleccionado ? null : clave;
+  registrosMostradosDia = MAXIMO_REGISTROS_DIA;
   renderCalendario();
 
   // El re-render destruye el botón recién pulsado: hay que devolverle
@@ -1678,7 +2703,7 @@ botonMesSiguiente.addEventListener("click", () => {
    IntersectionObserver, la página se ve entera igual.
 --------------------------------------------------------------- */
 const SELECTOR_REVELABLES =
-  ".cajaregistrar, #historial, #calendario, #estadisticas, #pie-pagina";
+  ".cajaregistrar, #pausa-calma, #historial, #calendario, #estadisticas, #pie-pagina";
 
 function revelarTodo() {
   document
@@ -1742,6 +2767,12 @@ const PASOS_VISITA = [
       "Elegí una emoción, marcá qué tan intensa fue y, si querés, escribí una observación. Con eso el registro ya queda guardado.",
   },
   {
+    objetivo: "#pausa-calma",
+    titulo: "Una pausa a tu ritmo",
+    texto:
+      "Si te sirve, seguí unas respiraciones suaves. No hace falta hacerlo perfecto y podés terminar cuando quieras.",
+  },
+  {
     objetivo: "#btn-resumen",
     titulo: "Tu último registro, a mano",
     texto:
@@ -1757,7 +2788,7 @@ const PASOS_VISITA = [
     objetivo: "#calendario",
     titulo: "El mes de un vistazo",
     texto:
-      "Cada día se pinta según el promedio de ese día, del rojo al verde. Tocá cualquiera para ver sus registros.",
+      "El color representa el promedio y los emojis muestran las emociones del día. Tocá también los días vacíos para ver su estado.",
   },
   {
     objetivo: "#estadisticas",
@@ -1933,13 +2964,20 @@ function posicionarVisita() {
 
   const caja = objetivo.getBoundingClientRect();
 
-  // El recuadro se recorta contra los bordes: sin esto, un objetivo que
-  // toca el borde de la pantalla se sale por el margen que le agregamos.
+  // Sigue los bordes visibles completos del objetivo, con un margen seguro.
   const arriba = Math.max(minArriba, caja.top - margen);
-  const izquierda = Math.max(borde, caja.left - margen);
-  const derecha = Math.min(anchoPantalla - borde, caja.right + margen);
-  const altoDeseado = Math.min(caja.height, altoPantalla * 0.55) + margen * 2;
-  const abajo = Math.min(altoPantalla - borde, arriba + altoDeseado);
+  const izquierda = Math.min(
+    Math.max(borde, caja.left - margen),
+    anchoPantalla - borde,
+  );
+  const derecha = Math.max(
+    izquierda,
+    Math.min(anchoPantalla - borde, caja.right + margen),
+  );
+  const abajo = Math.max(
+    arriba,
+    Math.min(altoPantalla - borde, caja.bottom + margen),
+  );
 
   focoVisita.style.top = `${arriba}px`;
   focoVisita.style.left = `${izquierda}px`;
@@ -1968,8 +3006,12 @@ function ubicarGlobo(focoArriba, focoAbajo, focoIzquierda, focoAncho) {
     Math.max(separacion, focoIzquierda + focoAncho / 2 - ancho / 2),
     Math.max(separacion, anchoPantalla - ancho - separacion),
   );
+  const arribaLimitado = Math.min(
+    Math.max(separacion, arriba),
+    Math.max(separacion, altoPantalla - altoGlobo - separacion),
+  );
 
-  globoVisita.style.top = `${arriba}px`;
+  globoVisita.style.top = `${arribaLimitado}px`;
   globoVisita.style.left = `${izquierda}px`;
 }
 
@@ -2006,6 +3048,68 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+document.addEventListener("keydown", (e) => {
+  if (modalAbierto() || visitaActiva || !window.appLista) {
+    return;
+  }
+
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !e.altKey) {
+    const formulario = document.getElementById("form-emocion");
+    if (formulario && (e.target instanceof Element) && formulario.contains(e.target)) {
+      e.preventDefault();
+      formulario.requestSubmit();
+    }
+    return;
+  }
+
+  const destino =
+    e.target instanceof Element ? e.target : null;
+  if (
+    e.ctrlKey ||
+    e.metaKey ||
+    e.altKey ||
+    e.shiftKey ||
+    destino?.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]')
+  ) {
+    return;
+  }
+
+  const seccion = (id) => document.getElementById(id);
+  const enfocarSeccion = (id, selector) => {
+    abrirMenuMovil(false);
+    const destinoSeccion = seccion(id);
+    destinoSeccion?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (selector) {
+      destinoSeccion?.querySelector(selector)?.focus({ preventScroll: true });
+    }
+  };
+
+  switch (e.key.toLowerCase()) {
+    case "r":
+      e.preventDefault();
+      enfocarSeccion("registrar", "#emocion-select");
+      break;
+    case "h":
+      e.preventDefault();
+      enfocarSeccion("historial");
+      break;
+    case "f":
+      e.preventDefault();
+      enfocarSeccion("historial", "#campo-busqueda-historial");
+      break;
+    case "p":
+      e.preventDefault();
+      enfocarSeccion("pausa-calma");
+      (temporizadorRespiracion
+        ? botonDetenerPausa
+        : botonIniciarPausa
+      ).click();
+      break;
+    default:
+      break;
+  }
+});
+
 /* ---------------------------------------------------------------
    Service worker (funcionamiento sin conexión)
 
@@ -2016,8 +3120,12 @@ document.addEventListener("keydown", (e) => {
 function avisarVersionNueva(registro) {
   const aviso = document.getElementById("aviso-actualizacion");
   const boton = document.getElementById("btn-actualizar-version");
+  const botonCerrar = document.getElementById("btn-cerrar-aviso-actualizacion");
 
   aviso.hidden = false;
+  botonCerrar.onclick = () => {
+    aviso.hidden = true;
+  };
   boton.addEventListener(
     "click",
     () => {
@@ -2091,3 +3199,7 @@ actualizarInterfaz();
 iniciarAvisoPrivacidad();
 iniciarRevelado();
 registrarServiceWorker();
+window.marcarAppLista();
+if (problemaLecturaRegistros) {
+  window.mostrarErrorApp(problemaLecturaRegistros);
+}
