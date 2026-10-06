@@ -7,7 +7,7 @@
       name="description"
       content="Diagramas del Registro Emocional de TECNO-LAB: arquitectura, recorrido de los datos y camino de un registro."
     />
-    <meta name="theme-color" content="#0d1b2a" />
+    <meta name="theme-color" content="#2866ad" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="icon" type="image/png" href="../img/favicon.png" />
     <title>Cómo funciona · Registro Emocional</title>
@@ -18,8 +18,11 @@
         padding: 20px;
         border: 1px solid var(--borde);
         border-radius: 12px;
-        background: linear-gradient(180deg, #ffffff, #eef9ff);
-        box-shadow: 0 14px 30px rgba(10, 25, 38, 0.08);
+        background: var(--panel-gradiente);
+        box-shadow: 0 14px 30px var(--sombra);
+        color: var(--texto);
+        animation: portada-aparece 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
       }
 
       .portada h1 {
@@ -46,22 +49,35 @@
       .lista-diagramas a {
         display: block;
         padding: 16px;
-        border: 1px solid #d8eefc;
+        border: 1px solid var(--borde);
         border-left: 4px solid var(--celeste-fuerte);
         border-radius: 6px;
-        background: linear-gradient(180deg, #ffffff, #f2fbff);
+        background: var(--panel-gradiente);
         color: var(--texto);
         text-decoration: none;
         transition:
-          transform 0.15s ease,
-          box-shadow 0.15s ease;
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          background 240ms ease;
       }
+
+      .lista-diagramas li {
+        animation: enlace-aparece 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      }
+
+      .lista-diagramas li:nth-child(1) { animation-delay: 70ms; }
+      .lista-diagramas li:nth-child(2) { animation-delay: 130ms; }
+      .lista-diagramas li:nth-child(3) { animation-delay: 190ms; }
+      .lista-diagramas li:nth-child(4) { animation-delay: 250ms; }
 
       .lista-diagramas a:hover,
       .lista-diagramas a:focus-visible {
         border-left-color: var(--celeste-oscuro);
-        outline: none;
-        box-shadow: 0 4px 10px rgba(10, 25, 38, 0.1);
+        outline: 2px solid var(--celeste-fuerte);
+        outline-offset: 2px;
+        box-shadow: 0 6px 16px var(--sombra);
         transform: translateY(-2px);
       }
 
@@ -82,10 +98,11 @@
         padding: 14px 16px;
         border: 1px solid var(--borde);
         border-radius: 6px;
-        background-color: #f4fbff;
+        background-color: var(--bg-panel-2);
         color: var(--texto-suave);
         font-size: 0.88rem;
         line-height: 1.55;
+        transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
       }
 
       .volver {
@@ -93,6 +110,32 @@
         margin-top: 18px;
         color: var(--celeste-fuerte);
         font-weight: 600;
+      }
+
+      .volver:focus-visible {
+        outline: 2px solid var(--celeste-fuerte);
+        outline-offset: 4px;
+      }
+
+      @keyframes portada-aparece {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes enlace-aparece {
+        from { opacity: 0; transform: translateY(7px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .portada,
+        .lista-diagramas li {
+          animation: none;
+        }
+
+        .lista-diagramas a {
+          transition: none;
+        }
       }
     </style>
   </head>
@@ -108,7 +151,50 @@
         </a>
         <span class="logo-texto">Registro Emocional</span>
       </div>
+      <button
+        type="button"
+        class="nav-boton theme-toggle"
+        data-theme-toggle
+        aria-label="Cambiar tema"
+      >
+        🌙 Oscuro
+      </button>
     </nav>
+
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const buttons = document.querySelectorAll('[data-theme-toggle]');
+
+        const themes = ['balanced', 'light', 'dark'];
+        const labels = {
+          balanced: '🌿 Intermedio',
+          light: '☀️ Claro',
+          dark: '🌙 Oscuro',
+        };
+
+        const setTheme = (theme) => {
+          if (!themes.includes(theme)) theme = 'balanced';
+          root.setAttribute('data-theme', theme);
+          localStorage.setItem('registro-emocional-theme', theme);
+          localStorage.setItem('archify-theme', theme === 'balanced' ? 'light' : theme);
+          buttons.forEach((button) => {
+            button.textContent = labels[theme];
+            button.setAttribute('aria-label', `Cambiar tema, actual: ${labels[theme]}`);
+          });
+        };
+
+        const savedTheme = localStorage.getItem('registro-emocional-theme') || 'balanced';
+        setTheme(savedTheme);
+
+        buttons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const currentIndex = themes.indexOf(root.getAttribute('data-theme'));
+            setTheme(themes[(currentIndex + 1) % themes.length]);
+          });
+        });
+      })();
+    </script>
 
     <main>
       <section class="portada">

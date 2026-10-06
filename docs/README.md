@@ -10,6 +10,10 @@ exportación a imagen desde la barra superior.
 | [`datos.html`](datos.html) | El recorrido de un registro, de la carga a las vistas |
 | [`flujo.html`](flujo.html) | El camino de registrar una emoción, con la rama de acompañamiento |
 
+El formulario del pie para reportar errores se conecta a Google Apps Script.
+Los pasos de configuración están en
+[`reportar-errores.md`](reportar-errores.md).
+
 ## Cómo se regeneran
 
 Los HTML están generados; lo que se edita son las fuentes de

@@ -7,12 +7,15 @@
       name="description"
       content="Registro emocional educativo de TECNO-LAB: anotá tu emoción, su intensidad y una observación. Los datos quedan guardados solo en tu navegador."
     />
-    <meta name="theme-color" content="#0d1b2a" />
+    <meta name="theme-color" content="#2866ad" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="img/icono-512.png" />
     <title>Registro Emocional - TECNO-LAB</title>
+    <script>
+      document.documentElement.classList.add("app-cargando");
+    </script>
   </head>
   <body>
     <nav class="navbar">
@@ -30,9 +33,28 @@
         aria-expanded="false"
         aria-controls="menu-navegacion"
       >
-        ☰
+        <span class="btn-menu-linea" aria-hidden="true"></span>
+        <span class="btn-menu-linea" aria-hidden="true"></span>
+        <span class="btn-menu-linea" aria-hidden="true"></span>
       </button>
+      <button
+        id="fondo-menu-movil"
+        class="fondo-menu-movil"
+        type="button"
+        aria-label="Cerrar menú"
+        hidden
+      ></button>
       <ul id="menu-navegacion" class="nav-links">
+        <li class="nav-tema">
+          <button
+            type="button"
+            class="nav-boton theme-toggle"
+            data-theme-toggle
+            aria-label="Cambiar tema"
+          >
+            🌙 Oscuro
+          </button>
+        </li>
         <li>
           <button
             id="btn-actualizar-registros"
@@ -72,6 +94,223 @@
       </ul>
     </nav>
 
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const buttons = document.querySelectorAll('[data-theme-toggle]');
+
+        const themes = ['balanced', 'light', 'dark'];
+        const labels = {
+          balanced: '🌿 Intermedio',
+          light: '☀️ Claro',
+          dark: '🌙 Oscuro',
+        };
+
+        const setTheme = (theme) => {
+          if (!themes.includes(theme)) theme = 'balanced';
+          root.setAttribute('data-theme', theme);
+          localStorage.setItem('registro-emocional-theme', theme);
+          localStorage.setItem('archify-theme', theme === 'balanced' ? 'light' : theme);
+          buttons.forEach((button) => {
+            button.textContent = labels[theme];
+            button.setAttribute('aria-label', `Cambiar tema, actual: ${labels[theme]}`);
+          });
+        };
+
+        const savedTheme = localStorage.getItem('registro-emocional-theme') || 'balanced';
+        setTheme(savedTheme);
+
+        buttons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const currentIndex = themes.indexOf(root.getAttribute('data-theme'));
+            setTheme(themes[(currentIndex + 1) % themes.length]);
+          });
+        });
+      })();
+    </script>
+
+    <div id="pantalla-carga" class="pantalla-estado pantalla-carga" role="status" aria-live="polite">
+      <div class="estado-panel">
+        <span class="indicador-carga" aria-hidden="true"></span>
+        <p class="estado-etiqueta">REGISTRO EMOCIONAL</p>
+        <h1>Preparando tu espacio</h1>
+        <p>Estamos leyendo los datos guardados en este dispositivo.</p>
+        <div class="estado-curiosidad">
+          <span>¿Sabías que?</span>
+          <p id="curiosidad-carga" aria-live="polite"></p>
+        </div>
+        <span class="estado-privacidad">Tus registros no se envían a ningún servidor.</span>
+      </div>
+    </div>
+
+    <section
+      id="pantalla-error"
+      class="pantalla-estado pantalla-error"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="titulo-error-app"
+      aria-describedby="mensaje-error-app detalle-error-app"
+      hidden
+    >
+      <div class="estado-panel">
+        <span id="icono-error-app" class="estado-icono-error" aria-hidden="true">!</span>
+        <p class="estado-etiqueta">NO SE PUDO ABRIR</p>
+        <h1 id="titulo-error-app">Algo interrumpió el inicio</h1>
+        <p id="mensaje-error-app"></p>
+        <p id="detalle-error-app" class="estado-detalle"></p>
+        <div class="estado-acciones">
+          <button id="btn-reintentar-app" type="button">Intentar de nuevo</button>
+          <button id="btn-lectura-app" class="estado-secundario" type="button" hidden>
+            Continuar en modo de lectura
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      (() => {
+        const raiz = document.documentElement;
+        const carga = document.getElementById("pantalla-carga");
+        const error = document.getElementById("pantalla-error");
+        const titulo = document.getElementById("titulo-error-app");
+        const mensaje = document.getElementById("mensaje-error-app");
+        const detalle = document.getElementById("detalle-error-app");
+        const icono = document.getElementById("icono-error-app");
+        const reintentar = document.getElementById("btn-reintentar-app");
+        const lectura = document.getElementById("btn-lectura-app");
+        const textoCuriosidad = document.getElementById("curiosidad-carga");
+        const curiosidades = [
+          "En un mismo día pueden convivir emociones opuestas; el calendario conserva sus emojis además del promedio.",
+          "El cero del medidor significa intensidad mínima, no que no estés sintiendo nada.",
+          "La observación es opcional: fecha, emoción e intensidad alcanzan para guardar un registro.",
+          "El promedio del calendario combina la intensidad con si la emoción fue agradable o difícil.",
+          "Un día sin registros también se puede tocar para ver su estado.",
+          "La pausa dura un minuto: son cinco ciclos suaves de 4, 2 y 6 segundos.",
+          "Cambiar el tema modifica los colores, no tus registros.",
+          "Podés importar un respaldo válido desde «Actualizar Registros».",
+          "Una vez abierta y guardada en el dispositivo, la app también puede funcionar sin conexión.",
+          "Podés registrar más de una emoción en el mismo día; el historial las conserva por separado.",
+        ];
+        let indiceCuriosidad = Math.floor(Math.random() * curiosidades.length);
+        const inicioCarga = performance.now();
+        let iniciada = false;
+        let temporizadorOcultarCarga = null;
+        window.appLista = false;
+        window.appSoloLectura = false;
+
+        const mostrarCuriosidad = () => {
+          textoCuriosidad.textContent = curiosidades[indiceCuriosidad];
+          indiceCuriosidad = (indiceCuriosidad + 1) % curiosidades.length;
+        };
+
+        mostrarCuriosidad();
+        const intervaloCuriosidades = window.setInterval(mostrarCuriosidad, 3600);
+
+        const casos = {
+          archivo: {
+            titulo: "No llegó el archivo principal",
+            mensaje: "El navegador no pudo cargar la parte interactiva de la página.",
+            detalle: "Puede ocurrir si abriste una versión nueva sin conexión o si el archivo quedó bloqueado. Conectate y volvé a intentar.",
+          },
+          inicio: {
+            titulo: "La aplicación no pudo iniciar",
+            mensaje: "Un error inesperado interrumpió la preparación de la página.",
+            detalle: "Tus datos locales no se borraron. Recargá para volver a intentarlo.",
+          },
+          demora: {
+            titulo: "La página está tardando más de lo normal",
+            mensaje: "La primera apertura sin conexión puede tardar si este dispositivo todavía no guardó una copia.",
+            detalle: "Comprobá la conexión y reintentá. No cierres ni borres los datos del sitio.",
+          },
+          almacenamiento: {
+            titulo: "El navegador no deja leer tus registros",
+            mensaje: "El almacenamiento local está bloqueado o no disponible en esta sesión.",
+            detalle: "Puede pasar en una ventana privada o en un dispositivo con políticas escolares. Podés entrar en modo de lectura; no guardaremos cambios.",
+            lectura: true,
+          },
+          datos: {
+            titulo: "Hay datos guardados con un formato inesperado",
+            mensaje: "No pudimos interpretar todos los registros de este dispositivo.",
+            detalle: "Para proteger el original, bloqueamos los cambios y no sobrescribimos esos datos. Podés revisar lo legible o importar un respaldo válido. No borres los datos del sitio.",
+            lectura: true,
+          },
+          espacio: {
+            titulo: "El almacenamiento de este sitio está lleno",
+            mensaje: "El último registro no se guardó; el formulario conserva lo que escribiste.",
+            detalle: "Descargá una copia de tus registros y liberá espacio del sitio en el navegador antes de volver a guardar.",
+            lectura: true,
+          },
+        };
+
+        window.mostrarErrorApp = (tipo) => {
+          const caso = casos[tipo] || casos.inicio;
+          titulo.textContent = caso.titulo;
+          mensaje.textContent = caso.mensaje;
+          detalle.textContent = caso.detalle;
+          icono.textContent = tipo === "espacio" ? "⌁" : "!";
+          lectura.hidden = !caso.lectura;
+          carga.hidden = true;
+          error.hidden = false;
+          window.clearTimeout(temporizadorOcultarCarga);
+          window.clearInterval(intervaloCuriosidades);
+          raiz.classList.remove("app-cargando");
+          requestAnimationFrame(() => reintentar.focus());
+        };
+
+        window.marcarAppLista = () => {
+          iniciada = true;
+          window.appLista = true;
+          window.clearTimeout(temporizador);
+          error.hidden = true;
+          const demoraRestante = Math.max(
+            0,
+            1050 - (performance.now() - inicioCarga),
+          );
+          temporizadorOcultarCarga = window.setTimeout(() => {
+            carga.hidden = true;
+            raiz.classList.remove("app-cargando");
+            window.clearInterval(intervaloCuriosidades);
+          }, demoraRestante);
+        };
+
+        window.cerrarErrorApp = () => {
+          error.hidden = true;
+        };
+
+        reintentar.addEventListener("click", () => window.location.reload());
+        lectura.addEventListener("click", () => {
+          window.appSoloLectura = true;
+          error.hidden = true;
+          if (typeof window.mostrarAviso === "function") {
+            window.mostrarAviso("Modo de lectura: los datos no se modificarán.", "error");
+          }
+        });
+
+        document.addEventListener("error", (evento) => {
+          if (
+            evento.target instanceof HTMLScriptElement &&
+            new URL(evento.target.src).pathname.endsWith("/js/script.js")
+          ) {
+            window.mostrarErrorApp("archivo");
+          }
+        }, true);
+
+        window.addEventListener("error", (evento) => {
+          if (!iniciada && evento.target === window) {
+            window.mostrarErrorApp("inicio");
+          }
+        });
+
+        window.addEventListener("unhandledrejection", () => {
+          if (!iniciada) window.mostrarErrorApp("inicio");
+        });
+
+        const temporizador = window.setTimeout(() => {
+          if (!iniciada) window.mostrarErrorApp("demora");
+        }, 15000);
+      })();
+    </script>
+
     <main>
       <section id="inicio" class="iniciocontenedor">
         <button
@@ -80,7 +319,7 @@
           aria-expanded="false"
           aria-controls="contenido-resumen"
         >
-          Resumen ▾
+          Resumen
         </button>
         <div id="contenido-resumen" class="contenido-inicio">
           <h3>Último registro</h3>
@@ -94,7 +333,10 @@
 
       <section id="registrar">
         <div class="cajaregistrar">
-          <h2>Registrar emoción</h2>
+          <h2>
+            Registrar emoción
+            <kbd class="atajo-tecla" aria-hidden="true">R</kbd>
+          </h2>
           <p>
             <i
               >Elegí una emoción, indicá su intensidad y agregá una observación
@@ -110,7 +352,11 @@
 
             <div class="campo-formulario">
               <label for="emocion-select">Emoción</label>
-              <select id="emocion-select" class="selectemocion">
+              <select
+                id="emocion-select"
+                class="selectemocion"
+                aria-keyshortcuts="R"
+              >
                 <option value="" disabled selected style="display: none">
                   Seleccioná una emoción
                 </option>
@@ -171,8 +417,32 @@
               ></textarea>
             </div>
 
-            <button type="submit">Registrar emoción</button>
+            <button type="submit" aria-keyshortcuts="Control+Enter Meta+Enter">
+              Registrar emoción
+              <span class="atajo-pista" aria-hidden="true">
+                <kbd>Ctrl</kbd><kbd>↵</kbd>
+              </span>
+            </button>
           </form>
+        </div>
+        <div
+          id="aviso-pagina"
+          class="aviso-pagina"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <span class="aviso-pagina-texto"></span>
+          <button
+            id="btn-cerrar-aviso-pagina"
+            class="btn-cerrar-aviso"
+            type="button"
+            aria-label="Cerrar aviso"
+            title="Cerrar aviso"
+            hidden
+          >
+            ×
+          </button>
         </div>
 
         <aside
@@ -193,14 +463,25 @@
           </button>
           <h2 id="titulo-actualizar-registros">Actualizar registros</h2>
           <p>Pegá aquí el contenido descargado para recuperar tus registros.</p>
-          <label class="selector-archivo" for="archivo-registros">
-            <span>Importar archivo de respaldo</span>
+          <div class="selector-archivo" role="group" aria-label="Importar archivo de respaldo">
+            <span class="selector-archivo-titulo">Importar archivo de respaldo</span>
+            <span class="selector-archivo-mensaje"
+              >Arrastrá el archivo aquí o seleccionalo desde tu dispositivo</span
+            >
+            <button id="btn-seleccionar-archivo" class="btn-seleccionar-archivo" type="button">
+              Seleccionar archivo
+            </button>
+            <span id="nombre-archivo-seleccionado" class="selector-archivo-nombre"
+              >Ningún archivo seleccionado</span
+            >
             <input
               id="archivo-registros"
               type="file"
+              aria-label="Archivo de respaldo"
+              hidden
               accept=".txt,.json,.csv,text/plain,application/json,text/csv"
             />
-          </label>
+          </div>
           <label class="etiqueta-pegar" for="registro-para-pegar"
             >Contenido del respaldo</label
           >
@@ -263,15 +544,147 @@
           </div>
         </aside>
 
-        <div id="modal-overlay-bg" class="modal-overlay-bg" hidden></div>
+        <aside
+          id="modal-reportar-bug"
+          class="panel-reportar-bug"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-reportar-bug"
+          aria-describedby="info-reportar-bug"
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          <button
+            id="btn-cerrar-reportar-bug"
+            class="btn-cerrar-actualizar"
+            type="button"
+            aria-label="Cerrar formulario de errores"
+          >
+            ×
+          </button>
+          <h2 id="titulo-reportar-bug">Reportar un error</h2>
+          <div id="info-reportar-bug" class="info-reportar-bug">
+            <p>
+              Ayudanos a mejorar la aplicación. El reporte y la imagen se
+              enviarán al equipo de Proyecto Nosotros por Google Apps Script y
+              Gmail; el servicio guardará únicamente un identificador anónimo
+              para contar los envíos diarios. La web seguirá alojada en
+              GitHub Pages; Google solo procesa el envío.
+            </p>
+            <ul>
+              <li>
+                Se permiten hasta <strong>3 reportes por día por navegador</strong>.
+                Borrar los datos del sitio o cambiar de navegador puede crear
+                un identificador distinto, así que el límite ayuda a ordenar
+                los envíos pero no identifica a una persona.
+              </li>
+              <li>
+                La imagen debe ser PNG, JPG o WebP y pesar como máximo 4 MB.
+                Revisá que no muestre datos personales antes de enviarla.
+              </li>
+              <li>
+                El tipo, los pasos, el resultado esperado, la página y el
+                navegador ayudan a reproducir el problema. Los campos
+                opcionales se pueden dejar vacíos.
+              </li>
+            </ul>
+            <p id="aviso-config-reportes" class="aviso-config-reportes" hidden>
+              El formulario todavía no está conectado. Falta activar el
+              servicio de Google Apps Script y configurar su URL; la web
+              seguirá funcionando desde GitHub Pages.
+            </p>
+          </div>
+          <form id="form-reportar-bug" class="form-reportar-bug">
+            <div class="campo-reporte campo-reporte-trampa" aria-hidden="true">
+              <label for="reporte-sitio">Dejá este campo vacío</label>
+              <input
+                id="reporte-sitio"
+                name="website"
+                type="text"
+                tabindex="-1"
+                autocomplete="off"
+              />
+            </div>
+            <div class="campo-reporte">
+              <label for="reporte-tipo">Tipo de problema *</label>
+              <select id="reporte-tipo" name="type" required>
+                <option value="visual">Visual o de diseño</option>
+                <option value="funcional">Botón o función no funciona</option>
+                <option value="contenido">Texto o información incorrecta</option>
+                <option value="rendimiento">Lentitud o bloqueo</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="campo-reporte">
+              <label for="reporte-descripcion">Descripción del error *</label>
+              <textarea
+                id="reporte-descripcion"
+                name="description"
+                minlength="20"
+                maxlength="3000"
+                rows="4"
+                required
+                placeholder="¿Qué pasó? ¿Qué estabas intentando hacer?"
+              ></textarea>
+            </div>
+            <div class="campo-reporte">
+              <label for="reporte-pasos">Pasos para reproducirlo (opcional)</label>
+              <textarea
+                id="reporte-pasos"
+                name="steps"
+                maxlength="1500"
+                rows="3"
+                placeholder="1. Abrí… 2. Presioná… 3. Ocurre…"
+              ></textarea>
+            </div>
+            <div class="campo-reporte">
+              <label for="reporte-esperado">¿Qué esperabas que ocurriera? (opcional)</label>
+              <input
+                id="reporte-esperado"
+                name="expected"
+                type="text"
+                maxlength="500"
+              />
+            </div>
+            <div class="campo-reporte">
+              <label for="reporte-imagen">Imagen del error * (PNG, JPG o WebP; hasta 4 MB)</label>
+              <input
+                id="reporte-imagen"
+                name="screenshot"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                required
+              />
+              <span id="reporte-imagen-nombre" class="reporte-ayuda"
+                >La imagen es obligatoria para enviar el reporte.</span
+              >
+            </div>
+            <label class="consentimiento-reporte" for="reporte-consentimiento">
+              <input
+                id="reporte-consentimiento"
+                name="consent"
+                type="checkbox"
+                required
+              />
+              <span>
+                Confirmo que revisé la imagen y acepto enviar este reporte al
+                equipo de Proyecto Nosotros.
+              </span>
+            </label>
+            <p
+              id="estado-reporte-bug"
+              class="estado-reporte-bug"
+              role="status"
+              aria-live="polite"
+              hidden
+            ></p>
+            <button id="btn-enviar-reporte-bug" type="submit">
+              Enviar reporte
+            </button>
+          </form>
+        </aside>
 
-        <div
-          id="aviso-pagina"
-          class="aviso-pagina"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        ></div>
+        <div id="modal-overlay-bg" class="modal-overlay-bg" hidden></div>
 
         <div id="contenedorBloqueo" class="pantalla-bloqueo-privacidad oculto">
           <div
@@ -393,46 +806,57 @@
         </div>
       </section>
 
-      <section id="historial" class="historial-contenedor">
-        <h2 class="historial-titulo">Historial</h2>
-        <p class="historial-descripcion">
-          Estos son los registros emocionales guardados en este navegador.
-        </p>
-
-        <div class="registros-bloque">
-          <div class="encabezado-registros">
-            <h3 class="registros-subtitulo">Registros</h3>
+      <section id="pausa-calma" class="pausa-contenedor" aria-labelledby="titulo-pausa">
+        <div class="pausa-contenido">
+          <p class="pausa-etiqueta">PAUSA CORTA</p>
+          <h2 id="titulo-pausa">Un minuto para bajar el ritmo</h2>
+          <p class="pausa-descripcion">
+            Seguí cinco ciclos suaves de respiración. No es una prueba: podés
+            terminar cuando quieras o respirar a tu propio ritmo.
+          </p>
+          <div class="pausa-progreso" aria-label="Cinco ciclos" aria-hidden="true">
+            <span class="pausa-ciclo" data-ciclo="0"></span>
+            <span class="pausa-ciclo" data-ciclo="1"></span>
+            <span class="pausa-ciclo" data-ciclo="2"></span>
+            <span class="pausa-ciclo" data-ciclo="3"></span>
+            <span class="pausa-ciclo" data-ciclo="4"></span>
+          </div>
+          <p id="pausa-instruccion" class="pausa-instruccion" role="status" aria-live="polite">
+            Cuando estés listo, empezá. Podés parar en cualquier momento.
+          </p>
+          <div class="pausa-acciones">
+            <button id="btn-iniciar-pausa" type="button" aria-keyshortcuts="P">
+              <span id="texto-btn-iniciar-pausa">Empezar pausa</span>
+              <kbd class="atajo-tecla" aria-hidden="true">P</kbd>
+            </button>
             <button
-              id="btn-buscar-historial"
-              class="btn-buscar-historial"
+              id="btn-detener-pausa"
+              class="pausa-detener"
               type="button"
-              aria-label="Buscar en el historial"
-              aria-expanded="false"
-              aria-controls="busqueda-historial"
+              aria-keyshortcuts="P"
+              disabled
             >
-              ⌕
+              Terminar ahora
+              <kbd class="atajo-tecla" aria-hidden="true">P</kbd>
             </button>
           </div>
-          <div id="busqueda-historial" class="busqueda-historial" hidden>
-            <label for="campo-busqueda-historial"
-              >Buscar por fecha, emoción, intensidad u observación</label
-            >
-            <input
-              type="search"
-              id="campo-busqueda-historial"
-              placeholder="Escribí para buscar..."
-              autocomplete="off"
-            />
+        </div>
+        <div class="pausa-visualizacion" aria-hidden="true">
+          <span class="pausa-orbita"></span>
+          <div id="pausa-circulo" class="pausa-circulo">
+            <span class="pausa-onda" aria-hidden="true"></span>
+            <span class="pausa-onda pausa-onda-secundaria" aria-hidden="true"></span>
+            <span id="pausa-cuenta" class="pausa-cuenta">·</span>
           </div>
-          <div id="lista-historial" class="lista-registros"></div>
+          <span class="pausa-visual-etiqueta">A tu ritmo</span>
         </div>
       </section>
 
       <section id="calendario" class="calendario-contenedor">
         <h2 class="calendario-titulo">Calendario</h2>
         <p class="calendario-descripcion">
-          Cada día muestra el promedio de cómo te fuiste sintiendo. Tocá un día
-          para ver sus registros.
+          El color muestra el promedio y los emojis las emociones registradas.
+          Tocá cualquier día para ver sus registros o saber si está vacío.
         </p>
 
         <div class="calendario-controles">
@@ -516,6 +940,99 @@
           </div>
         </div>
       </section>
+
+      <section id="historial" class="historial-contenedor">
+        <h2 class="historial-titulo">Historial</h2>
+        <p class="historial-descripcion">
+          Estos son los registros emocionales guardados en este navegador.
+        </p>
+
+        <div class="registros-bloque">
+          <div class="encabezado-registros">
+            <h3 class="registros-subtitulo">Registros</h3>
+            <div
+              class="barra-busqueda-historial"
+              role="search"
+              aria-label="Buscar en el historial"
+            >
+              <input
+                type="search"
+                id="campo-busqueda-historial"
+                class="campo-busqueda-historial"
+                aria-label="Buscar observación, emoción o fecha"
+                aria-keyshortcuts="F"
+                placeholder="Buscar observación, emoción o fecha..."
+                autocomplete="off"
+              />
+              <kbd class="atajo-tecla atajo-busqueda" aria-hidden="true">F</kbd>
+              <button
+                id="btn-buscar-historial"
+                class="btn-buscar-historial"
+                type="button"
+                aria-label="Mostrar filtros del historial"
+                aria-expanded="false"
+                aria-controls="busqueda-historial"
+              >
+                <span class="icono-filtro" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+          <div
+            id="busqueda-historial"
+            class="busqueda-historial"
+            aria-label="Filtros avanzados del historial"
+            hidden
+          >
+            <div class="filtros-historial">
+              <div class="campo-filtro-historial">
+                <label for="filtro-emocion-historial">Emoción</label>
+                <select id="filtro-emocion-historial">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="campo-filtro-historial">
+                <label for="filtro-intensidad-historial">Intensidad</label>
+                <select id="filtro-intensidad-historial">
+                  <option value="">Todas</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              <div class="campo-filtro-historial filtro-fecha-historial">
+                <label for="filtro-fecha-desde">Fecha (desde / hasta)</label>
+                <div class="rango-fecha-historial">
+                  <input
+                    type="date"
+                    id="filtro-fecha-desde"
+                    aria-label="Fecha desde"
+                    title="Desde"
+                  />
+                  <span aria-hidden="true">a</span>
+                  <input
+                    type="date"
+                    id="filtro-fecha-hasta"
+                    aria-label="Fecha hasta"
+                    title="Hasta"
+                  />
+                </div>
+              </div>
+              <button id="btn-limpiar-filtros" class="btn-limpiar-filtros" type="button">
+                Limpiar filtros
+              </button>
+            </div>
+          </div>
+          <div id="lista-historial" class="lista-registros"></div>
+        </div>
+      </section>
     </main>
 
     <div id="visita-guiada" class="visita-guiada" hidden>
@@ -559,6 +1076,15 @@
     >
       <span>Hay una versión nueva de la página.</span>
       <button id="btn-actualizar-version" type="button">Actualizar</button>
+      <button
+        id="btn-cerrar-aviso-actualizacion"
+        class="btn-cerrar-aviso-actualizacion"
+        type="button"
+        aria-label="Cerrar aviso de actualización"
+        title="Cerrar aviso"
+      >
+        ×
+      </button>
     </div>
 
     <footer id="pie-pagina">
@@ -571,7 +1097,18 @@
       <p>Tecno-LAB | Proyecto Nosotros</p>
       <p>Tus registros son privados.</p>
       <p>
-        <a class="enlace-privacidad" href="docs/">Cómo funciona</a>
+        <button
+          id="btn-reportar-bug"
+          class="btn-reportar-bug"
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-controls="modal-reportar-bug"
+        >
+          Reportar un error
+        </button>
+        <span class="separador-pie" aria-hidden="true">·</span>
+        <a class="enlace-privacidad" href="docs/index.html">Cómo funciona</a>
         <span class="separador-pie" aria-hidden="true">·</span>
         <button
           id="btn-ver-visita"
@@ -601,6 +1138,7 @@
     <!-- jsPDF 2.5.1, servido desde el repo para que el PDF también
          funcione sin conexión. -->
     <script src="js/jspdf.umd.min.js"></script>
+    <script src="js/reportes-config.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

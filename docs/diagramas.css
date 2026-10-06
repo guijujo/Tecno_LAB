@@ -1,0 +1,75 @@
+.diagram-container > svg {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.diagram-container > svg[data-intent-trace-active] [data-node-id],
+.diagram-container > svg[data-intent-trace-active] [data-edge-from] {
+  opacity: 0.1;
+}
+
+.diagram-container > svg[data-intent-trace-active] [data-intent-trace-match] {
+  opacity: 1;
+}
+
+.diagram-container
+  > svg[data-intent-trace-active]
+  [data-intent-trace-selected] {
+  filter: drop-shadow(0 0 12px var(--frontend-stroke));
+}
+
+html[data-present="true"]:not([data-embed="true"]) body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+html[data-present="true"]:not([data-embed="true"]) .docs-navbar {
+  position: relative;
+  top: auto;
+  flex: none;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+html[data-present="true"]:not([data-embed="true"]) .toolbar {
+  position: relative;
+  inset: auto;
+  z-index: 110;
+  flex: none;
+  align-self: flex-end;
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+}
+
+html[data-present="true"]:not([data-embed="true"]) .container {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  margin: 0 auto;
+}
+
+html[data-present="true"]:not([data-embed="true"]) .header {
+  padding-right: 0;
+}
+
+@media (max-width: 899px) {
+  html[data-present="true"]:not([data-embed="true"]) .diagram-container {
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  html[data-present="true"]:not([data-embed="true"])
+    .diagram-container
+    > svg {
+    flex: 0 0 auto;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-height: none !important;
+  }
+}

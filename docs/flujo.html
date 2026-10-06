@@ -4973,8 +4973,128 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       svg [data-node-id], svg [data-edge-from], svg [data-detail], svg [data-detail-anchor], svg [data-legend-hit], svg { transition: none !important; }
     }
   </style>
+  <style>
+    .docs-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 120;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 1200px;
+      margin: 18px auto 12px;
+      padding: 10px 16px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 24px rgba(2, 6, 23, 0.18);
+      color: #e2e8f0;
+    }
+
+    .docs-navbar__brand a,
+    .docs-navbar__link {
+      color: #e2e8f0;
+      text-decoration: none;
+    }
+
+    .docs-navbar__brand a {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .docs-navbar__logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .docs-navbar__links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .docs-navbar__link {
+      padding: 8px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.08);
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .docs-navbar__link:hover,
+    .docs-navbar__link:focus-visible {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.7);
+      outline: none;
+    }
+
+    @media (max-width: 640px) {
+      .docs-navbar {
+        padding: 10px 12px;
+      }
+
+      .docs-navbar__brand a {
+        font-size: 0.8rem;
+      }
+
+      .docs-navbar__link {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="diagramas.css">
 </head>
 <body>
+  <nav class="docs-navbar" aria-label="Navegación de la guía">
+    <div class="docs-navbar__brand">
+      <a href="index.html">
+        <img class="docs-navbar__logo" src="../img/favicon.png" alt="Registro Emocional" />
+        <span>Registro Emocional</span>
+      </a>
+    </div>
+    <div class="docs-navbar__links">
+      <a href="index.html" class="docs-navbar__link">Inicio</a>
+      <button type="button" class="docs-navbar__link" onclick="history.back()">Atrás</button>
+      <button type="button" class="docs-navbar__link" data-theme-toggle aria-label="Cambiar tema">🌙 Oscuro</button>
+    </div>
+  </nav>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const buttons = document.querySelectorAll('[data-theme-toggle]');
+
+      const setTheme = (theme) => {
+        root.setAttribute('data-theme', theme);
+        localStorage.setItem('archify-theme', theme);
+        buttons.forEach((button) => {
+          const isDark = theme === 'dark';
+          button.textContent = isDark ? '🌙 Oscuro' : '☀️ Claro';
+          button.setAttribute('aria-pressed', String(!isDark));
+        });
+      };
+
+      const savedTheme = localStorage.getItem('archify-theme') || 'dark';
+      setTheme(savedTheme);
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          setTheme(nextTheme);
+        });
+      });
+    })();
+  </script>
   <!-- Toolbar: theme, live visual style, trace motion, presentation stage, and export.
        Motion appears only for trace-enabled artifacts and has no shortcut;
        Keyboard: T toggles theme, S cycles style, F toggles the stage, E opens export. -->
